@@ -1,0 +1,636 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Соло Let Down</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f5f2ea;
+  --surface:#ffffff;
+  --surface-2:#eef0e6;
+  --border:#dadfd2;
+  --text:#1a231d;
+  --text-dim:#5c6b60;
+  --accent:#b8681a;
+  --accent-soft:#f1e0c8;
+  --good:#0e8a71;
+  --good-soft:#dcf3ec;
+  --bad:#c1402f;
+  --bad-soft:#f8e2de;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1310;
+    --surface:#151d19;
+    --surface-2:#1b241f;
+    --border:#2a332c;
+    --text:#e8ede8;
+    --text-dim:#8fa197;
+    --accent:#ffb454;
+    --accent-soft:#3a2c14;
+    --good:#5ee6c5;
+    --good-soft:#123c33;
+    --bad:#ff7a6b;
+    --bad-soft:#3d1f1a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1310;
+  --surface:#151d19;
+  --surface-2:#1b241f;
+  --border:#2a332c;
+  --text:#e8ede8;
+  --text-dim:#8fa197;
+  --accent:#ffb454;
+  --accent-soft:#3a2c14;
+  --good:#5ee6c5;
+  --good-soft:#123c33;
+  --bad:#ff7a6b;
+  --bad-soft:#3d1f1a;
+}
+
+*{box-sizing:border-box;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  padding:28px 16px 56px;
+  display:flex;
+  justify-content:center;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;}
+.wrap{width:100%;max-width:760px;display:flex;flex-direction:column;gap:22px;}
+
+header{display:flex;flex-direction:column;gap:6px;}
+h1{
+  margin:0;
+  font-size:clamp(24px,5vw,32px);
+  font-weight:600;
+  letter-spacing:-0.01em;
+  text-wrap:balance;
+}
+.meta{
+  color:var(--text-dim);
+  font-size:13px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px 14px;
+}
+.meta span{white-space:nowrap;}
+.meta b{color:var(--text);font-weight:600;}
+
+.panel{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+}
+.panel-title{
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+  margin:0 0 12px;
+}
+
+#rollCanvas{width:100%;display:block;border-radius:6px;background:var(--surface-2);touch-action:none;cursor:pointer;}
+
+.transport{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;}
+button{
+  font-family:inherit;
+  font-size:13px;
+  font-weight:600;
+  border:1px solid var(--border);
+  background:var(--surface-2);
+  color:var(--text);
+  border-radius:8px;
+  padding:9px 14px;
+  cursor:pointer;
+  transition:background .15s, transform .05s;
+}
+button:hover{background:var(--accent-soft);}
+button:active{transform:scale(.97);}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+button.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+button.primary:hover{filter:brightness(1.05);}
+button.toggled{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+button:disabled{opacity:.5;cursor:not-allowed;}
+
+.rate{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim);margin-left:auto;}
+.rate input{accent-color:var(--accent);}
+.rate .val{font-family:"IBM Plex Mono",monospace;color:var(--text);width:38px;text-align:right;}
+
+.phrases{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.phrases button{padding:6px 12px;font-size:12px;}
+
+.now{
+  display:flex;
+  align-items:baseline;
+  gap:14px;
+  margin-top:16px;
+  padding-top:16px;
+  border-top:1px dashed var(--border);
+}
+.now .label{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;}
+.now .note{font-family:"IBM Plex Mono",monospace;font-size:34px;font-weight:600;min-width:70px;}
+.now .idx{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text-dim);}
+
+.sing-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+.score{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:13px;
+  color:var(--text-dim);
+  display:flex;
+  gap:14px;
+}
+.score b{color:var(--text);font-weight:600;}
+
+.target-row{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  margin:18px 0 14px;
+  flex-wrap:wrap;
+}
+.target-note{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:46px;
+  font-weight:600;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:8px 22px;
+  min-width:110px;
+  text-align:center;
+}
+.mic-status{
+  font-size:12px;
+  color:var(--text-dim);
+  max-width:230px;
+  line-height:1.4;
+}
+
+.meter-wrap{margin-top:4px;}
+.meter{
+  position:relative;
+  height:54px;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  overflow:hidden;
+}
+.meter .zero-line{
+  position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--border);transform:translateX(-1px);
+}
+.meter .band{
+  position:absolute;left:50%;top:0;bottom:0;width:16%;transform:translateX(-50%);
+  background:var(--good-soft);
+}
+.meter .needle{
+  position:absolute;top:6px;bottom:6px;width:4px;border-radius:2px;
+  background:var(--text-dim);
+  left:50%;transform:translateX(-50%);
+  transition:left .06s linear, background .1s linear;
+  opacity:0;
+}
+.meter .needle.show{opacity:1;}
+.meter .needle.good{background:var(--good);}
+.meter .needle.bad{background:var(--bad);}
+.meter-scale{display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--text-dim);margin-top:4px;}
+
+.detected{margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text-dim);}
+.detected b{color:var(--text);}
+
+.sing-controls{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+
+footer{color:var(--text-dim);font-size:12px;text-align:center;line-height:1.6;}
+
+@media (max-width:480px){
+  .now .note{font-size:26px;}
+  .target-note{font-size:34px;padding:6px 14px;min-width:90px;}
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Соло Let Down</h1>
+    <div class="meta">
+      <span>источник: <b>гитарная партия, капо VII лад</b></span>
+      <span>темп <b>120</b> уд/мин</span>
+      <span>диапазон <b>A3–E5</b></span>
+      <span>длительность <b>~62 сек</b></span>
+    </div>
+  </header>
+
+  <section class="panel">
+    <p class="panel-title">Партия — визуально</p>
+    <canvas id="rollCanvas" height="180"></canvas>
+
+    <div class="transport">
+      <button id="playBtn" class="primary">▶ Играть</button>
+      <button id="loopBtn">Повтор ⟲</button>
+      <div class="rate">
+        <span>темп</span>
+        <input id="rateSlider" type="range" min="0.5" max="1.25" step="0.05" value="1">
+        <span class="val mono" id="rateVal">100%</span>
+      </div>
+    </div>
+
+    <div class="phrases" id="phraseButtons"></div>
+
+    <div class="now">
+      <span class="label">Сейчас</span>
+      <span class="note mono" id="nowNote">—</span>
+      <span class="idx" id="nowIdx">нота 0 / 152</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="sing-head">
+      <p class="panel-title" style="margin:0;">Спой в ответ</p>
+      <div class="score">
+        <span>верно: <b id="scoreGood">0</b></span>
+        <span>всего: <b id="scoreTotal">0</b></span>
+      </div>
+    </div>
+
+    <div class="target-row">
+      <div class="target-note mono" id="targetNote">E4</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button id="playTargetBtn">🔊 Дать ноту</button>
+        <button id="nextTargetBtn">Следующая нота →</button>
+      </div>
+      <div class="mic-status" id="micStatus">Нажми «Слушать» и разреши доступ к микрофону — попробуй спеть ноту в тон.</div>
+    </div>
+
+    <div class="meter-wrap">
+      <div class="meter">
+        <div class="zero-line"></div>
+        <div class="band"></div>
+        <div class="needle" id="needle"></div>
+      </div>
+      <div class="meter-scale"><span>−50¢ ниже</span><span>в тон</span><span>+50¢ выше</span></div>
+    </div>
+
+    <div class="detected" id="detected">Микрофон выключен.</div>
+
+    <div class="sing-controls">
+      <button id="micBtn" class="primary">🎙 Слушать</button>
+    </div>
+  </section>
+
+  <footer>
+    Мелодия извлечена из фан-транскрипции MIDI (партия гитары, капо VII лад). Звук ниже — синтезированный тон, не оригинальная запись.
+  </footer>
+</div>
+
+<script>
+const NOTES = [{"t":0.0,"d":0.5,"midi":64,"name":"E4"},{"t":0.5,"d":0.25,"midi":66,"name":"F#4"},{"t":1.0,"d":0.5,"midi":68,"name":"G#4"},{"t":1.5,"d":0.25,"midi":69,"name":"A4"},{"t":2.0,"d":0.25,"midi":68,"name":"G#4"},{"t":2.25,"d":0.25,"midi":57,"name":"A3"},{"t":2.5,"d":0.25,"midi":69,"name":"A4"},{"t":2.75,"d":0.25,"midi":68,"name":"G#4"},{"t":3.0,"d":0.25,"midi":57,"name":"A3"},{"t":3.25,"d":0.25,"midi":69,"name":"A4"},{"t":3.5,"d":0.25,"midi":68,"name":"G#4"},{"t":3.75,"d":0.25,"midi":57,"name":"A3"},{"t":4.0,"d":0.25,"midi":64,"name":"E4"},{"t":4.25,"d":0.25,"midi":57,"name":"A3"},{"t":4.5,"d":0.25,"midi":66,"name":"F#4"},{"t":4.75,"d":0.25,"midi":57,"name":"A3"},{"t":5.0,"d":0.25,"midi":68,"name":"G#4"},{"t":5.25,"d":0.25,"midi":57,"name":"A3"},{"t":5.5,"d":0.25,"midi":69,"name":"A4"},{"t":5.75,"d":0.25,"midi":68,"name":"G#4"},{"t":6.0,"d":0.25,"midi":57,"name":"A3"},{"t":6.25,"d":0.25,"midi":69,"name":"A4"},{"t":6.5,"d":0.25,"midi":68,"name":"G#4"},{"t":6.75,"d":0.25,"midi":57,"name":"A3"},{"t":7.0,"d":0.25,"midi":68,"name":"G#4"},{"t":7.25,"d":0.25,"midi":73,"name":"C#5"},{"t":7.5,"d":0.25,"midi":68,"name":"G#4"},{"t":7.75,"d":0.25,"midi":57,"name":"A3"},{"t":8.0,"d":0.25,"midi":64,"name":"E4"},{"t":8.25,"d":0.25,"midi":57,"name":"A3"},{"t":8.5,"d":0.25,"midi":66,"name":"F#4"},{"t":8.75,"d":0.25,"midi":57,"name":"A3"},{"t":9.0,"d":0.25,"midi":68,"name":"G#4"},{"t":9.25,"d":0.25,"midi":57,"name":"A3"},{"t":9.5,"d":0.25,"midi":69,"name":"A4"},{"t":9.75,"d":0.25,"midi":68,"name":"G#4"},{"t":10.0,"d":0.25,"midi":57,"name":"A3"},{"t":10.25,"d":0.25,"midi":69,"name":"A4"},{"t":10.5,"d":0.25,"midi":68,"name":"G#4"},{"t":10.75,"d":0.25,"midi":57,"name":"A3"},{"t":11.0,"d":0.25,"midi":68,"name":"G#4"},{"t":11.25,"d":0.25,"midi":76,"name":"E5"},{"t":11.5,"d":0.25,"midi":66,"name":"F#4"},{"t":11.75,"d":0.25,"midi":57,"name":"A3"},{"t":12.0,"d":0.25,"midi":64,"name":"E4"},{"t":12.25,"d":0.25,"midi":57,"name":"A3"},{"t":12.5,"d":0.25,"midi":66,"name":"F#4"},{"t":12.75,"d":0.25,"midi":57,"name":"A3"},{"t":13.0,"d":0.25,"midi":68,"name":"G#4"},{"t":13.25,"d":0.25,"midi":57,"name":"A3"},{"t":13.5,"d":0.25,"midi":69,"name":"A4"},{"t":13.75,"d":0.25,"midi":68,"name":"G#4"},{"t":14.0,"d":0.25,"midi":57,"name":"A3"},{"t":14.25,"d":0.25,"midi":69,"name":"A4"},{"t":14.5,"d":0.25,"midi":68,"name":"G#4"},{"t":14.75,"d":0.25,"midi":57,"name":"A3"},{"t":15.0,"d":0.25,"midi":68,"name":"G#4"},{"t":15.25,"d":0.25,"midi":73,"name":"C#5"},{"t":15.5,"d":0.25,"midi":68,"name":"G#4"},{"t":16.0,"d":0.5,"midi":64,"name":"E4"},{"t":16.5,"d":0.25,"midi":66,"name":"F#4"},{"t":17.0,"d":0.5,"midi":68,"name":"G#4"},{"t":17.5,"d":0.25,"midi":69,"name":"A4"},{"t":18.0,"d":0.25,"midi":68,"name":"G#4"},{"t":18.25,"d":0.25,"midi":57,"name":"A3"},{"t":18.5,"d":0.25,"midi":69,"name":"A4"},{"t":18.75,"d":0.25,"midi":68,"name":"G#4"},{"t":19.0,"d":0.25,"midi":57,"name":"A3"},{"t":19.25,"d":0.25,"midi":69,"name":"A4"},{"t":19.5,"d":0.25,"midi":68,"name":"G#4"},{"t":19.75,"d":0.25,"midi":57,"name":"A3"},{"t":20.0,"d":0.25,"midi":64,"name":"E4"},{"t":20.25,"d":0.25,"midi":57,"name":"A3"},{"t":20.5,"d":0.25,"midi":66,"name":"F#4"},{"t":20.75,"d":0.25,"midi":57,"name":"A3"},{"t":21.0,"d":0.25,"midi":68,"name":"G#4"},{"t":21.25,"d":0.25,"midi":57,"name":"A3"},{"t":21.5,"d":0.25,"midi":69,"name":"A4"},{"t":21.75,"d":0.25,"midi":68,"name":"G#4"},{"t":22.0,"d":0.25,"midi":57,"name":"A3"},{"t":22.25,"d":0.25,"midi":69,"name":"A4"},{"t":22.5,"d":0.25,"midi":68,"name":"G#4"},{"t":22.75,"d":0.25,"midi":57,"name":"A3"},{"t":23.0,"d":0.25,"midi":68,"name":"G#4"},{"t":23.25,"d":0.25,"midi":73,"name":"C#5"},{"t":23.5,"d":0.25,"midi":68,"name":"G#4"},{"t":23.75,"d":0.25,"midi":57,"name":"A3"},{"t":24.0,"d":0.25,"midi":64,"name":"E4"},{"t":24.25,"d":0.25,"midi":57,"name":"A3"},{"t":24.5,"d":0.25,"midi":66,"name":"F#4"},{"t":24.75,"d":0.25,"midi":57,"name":"A3"},{"t":25.0,"d":0.25,"midi":68,"name":"G#4"},{"t":25.25,"d":0.25,"midi":57,"name":"A3"},{"t":25.5,"d":0.25,"midi":69,"name":"A4"},{"t":25.75,"d":0.25,"midi":68,"name":"G#4"},{"t":26.0,"d":0.25,"midi":57,"name":"A3"},{"t":26.25,"d":0.25,"midi":69,"name":"A4"},{"t":26.5,"d":0.25,"midi":68,"name":"G#4"},{"t":26.75,"d":0.25,"midi":57,"name":"A3"},{"t":27.0,"d":0.25,"midi":68,"name":"G#4"},{"t":27.25,"d":0.25,"midi":76,"name":"E5"},{"t":27.5,"d":0.25,"midi":66,"name":"F#4"},{"t":27.75,"d":0.25,"midi":57,"name":"A3"},{"t":28.0,"d":0.25,"midi":64,"name":"E4"},{"t":28.25,"d":0.25,"midi":57,"name":"A3"},{"t":28.5,"d":0.25,"midi":66,"name":"F#4"},{"t":28.75,"d":0.25,"midi":57,"name":"A3"},{"t":29.0,"d":0.25,"midi":68,"name":"G#4"},{"t":29.25,"d":0.25,"midi":57,"name":"A3"},{"t":29.5,"d":0.25,"midi":69,"name":"A4"},{"t":29.75,"d":0.25,"midi":68,"name":"G#4"},{"t":30.0,"d":0.25,"midi":57,"name":"A3"},{"t":30.25,"d":0.25,"midi":69,"name":"A4"},{"t":30.5,"d":0.25,"midi":68,"name":"G#4"},{"t":30.75,"d":0.25,"midi":57,"name":"A3"},{"t":31.0,"d":0.25,"midi":68,"name":"G#4"},{"t":31.25,"d":0.25,"midi":73,"name":"C#5"},{"t":31.5,"d":0.25,"midi":68,"name":"G#4"},{"t":47.75,"d":0.25,"midi":74,"name":"D5"},{"t":48.0,"d":0.25,"midi":69,"name":"A4"},{"t":48.25,"d":0.25,"midi":74,"name":"D5"},{"t":48.5,"d":0.25,"midi":73,"name":"C#5"},{"t":48.75,"d":0.25,"midi":69,"name":"A4"},{"t":49.0,"d":0.25,"midi":71,"name":"B4"},{"t":49.25,"d":0.25,"midi":69,"name":"A4"},{"t":49.5,"d":0.25,"midi":71,"name":"B4"},{"t":50.0,"d":0.5,"midi":64,"name":"E4"},{"t":50.5,"d":0.25,"midi":66,"name":"F#4"},{"t":51.0,"d":0.5,"midi":68,"name":"G#4"},{"t":51.5,"d":0.25,"midi":69,"name":"A4"},{"t":51.75,"d":0.5,"midi":68,"name":"G#4"},{"t":52.25,"d":0.25,"midi":69,"name":"A4"},{"t":52.5,"d":0.25,"midi":68,"name":"G#4"},{"t":53.0,"d":0.5,"midi":68,"name":"G#4"},{"t":53.5,"d":0.25,"midi":68,"name":"G#4"},{"t":54.0,"d":0.5,"midi":64,"name":"E4"},{"t":54.5,"d":0.25,"midi":66,"name":"F#4"},{"t":55.0,"d":0.5,"midi":64,"name":"E4"},{"t":55.5,"d":0.25,"midi":64,"name":"E4"},{"t":56.0,"d":0.25,"midi":62,"name":"D4"},{"t":56.25,"d":0.25,"midi":59,"name":"B3"},{"t":56.5,"d":0.25,"midi":61,"name":"C#4"},{"t":56.75,"d":0.5,"midi":64,"name":"E4"},{"t":57.25,"d":0.5,"midi":66,"name":"F#4"},{"t":58.0,"d":0.5,"midi":64,"name":"E4"},{"t":58.5,"d":0.25,"midi":66,"name":"F#4"},{"t":59.0,"d":0.5,"midi":68,"name":"G#4"},{"t":59.5,"d":0.25,"midi":69,"name":"A4"},{"t":60.0,"d":0.5,"midi":66,"name":"F#4"},{"t":60.5,"d":0.25,"midi":68,"name":"G#4"},{"t":61.0,"d":0.5,"midi":68,"name":"G#4"},{"t":61.5,"d":0.25,"midi":68,"name":"G#4"}];
+
+const TOTAL_DUR = NOTES[NOTES.length-1].t + NOTES[NOTES.length-1].d;
+const MIN_MIDI = Math.min(...NOTES.map(n=>n.midi)) - 2;
+const MAX_MIDI = Math.max(...NOTES.map(n=>n.midi)) + 2;
+
+const PHRASES = [
+  {label:"1", from:0, to:16},
+  {label:"2", from:16, to:31.75},
+  {label:"3", from:47.75, to:56},
+  {label:"4", from:56, to:TOTAL_DUR},
+];
+
+function freqFromMidi(m){ return 440 * Math.pow(2, (m-69)/12); }
+function midiFromFreq(f){ return 69 + 12*Math.log2(f/440); }
+
+// ---------- canvas piano roll ----------
+const canvas = document.getElementById('rollCanvas');
+const ctx = canvas.getContext('2d');
+let cssWidth = 0;
+
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+function resizeCanvas(){
+  const dpr = window.devicePixelRatio || 1;
+  cssWidth = canvas.clientWidth;
+  canvas.width = cssWidth * dpr;
+  canvas.height = 180 * dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  drawRoll();
+}
+
+function xOf(t){ return (t/TOTAL_DUR) * cssWidth; }
+function yOf(midi){
+  const h = 180;
+  const pad = 10;
+  const span = MAX_MIDI - MIN_MIDI;
+  return pad + (1 - (midi - MIN_MIDI)/span) * (h - pad*2);
+}
+
+let playheadT = 0;
+
+function drawRoll(){
+  const h = 180;
+  ctx.clearRect(0,0,cssWidth,h);
+  ctx.fillStyle = cssVar('--surface-2');
+  ctx.fillRect(0,0,cssWidth,h);
+
+  // phrase separators
+  ctx.strokeStyle = cssVar('--border');
+  ctx.lineWidth = 1;
+  PHRASES.forEach(p=>{
+    const x = xOf(p.from);
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke();
+  });
+
+  // notes
+  NOTES.forEach(n=>{
+    const x = xOf(n.t);
+    const w = Math.max(2, xOf(n.t+n.d) - x - 1);
+    const y = yOf(n.midi);
+    const rowH = 6;
+    ctx.fillStyle = cssVar('--accent');
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y-rowH/2, w, rowH, 2);
+    else ctx.rect(x, y-rowH/2, w, rowH);
+    ctx.fill();
+  });
+
+  // playhead
+  const px = xOf(playheadT);
+  ctx.strokeStyle = cssVar('--bad');
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(px,0); ctx.lineTo(px,h); ctx.stroke();
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+canvas.addEventListener('click', (e)=>{
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const t = (x/cssWidth) * TOTAL_DUR;
+  seekTo(t);
+});
+
+// ---------- playback ----------
+let audioCtx = null;
+function ensureCtx(){
+  if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+let isPlaying = false;
+let loopOn = false;
+let playRate = 1;
+let scheduledStart = 0; // audioCtx time when playheadT=0 was scheduled
+let animFrame = null;
+let activeOsc = [];
+let restrictFrom = 0, restrictTo = TOTAL_DUR;
+
+function tone(freq, startTime, dur, vel=0.22){
+  const ctx_ = ensureCtx();
+  const osc = ctx_.createOscillator();
+  const gain = ctx_.createGain();
+  osc.type = 'triangle';
+  osc.frequency.value = freq;
+  osc.connect(gain); gain.connect(ctx_.destination);
+  const a = 0.01, r = 0.06;
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(vel, startTime+a);
+  gain.gain.setValueAtTime(vel, Math.max(startTime+a, startTime+dur-r));
+  gain.gain.linearRampToValueAtTime(0, startTime+dur);
+  osc.start(startTime);
+  osc.stop(startTime+dur+0.02);
+  activeOsc.push(osc);
+}
+
+function scheduleFrom(t0){
+  const ctx_ = ensureCtx();
+  scheduledStart = ctx_.currentTime - t0/playRate;
+  NOTES.forEach(n=>{
+    if (n.t < t0) return;
+    if (n.t < restrictFrom || n.t >= restrictTo) return;
+    const when = scheduledStart + n.t/playRate;
+    tone(freqFromMidi(n.midi), when, (n.d*0.92)/playRate);
+  });
+}
+
+function stopAllTones(){
+  activeOsc.forEach(o=>{ try{o.stop();}catch(e){} });
+  activeOsc = [];
+}
+
+function updateNowPanel(){
+  let idx = -1;
+  for (let i=0;i<NOTES.length;i++){ if (NOTES[i].t <= playheadT) idx = i; else break; }
+  document.getElementById('nowNote').textContent = idx>=0 ? NOTES[idx].name : '—';
+  document.getElementById('nowIdx').textContent = `нота ${Math.max(idx+1,0)} / ${NOTES.length}`;
+}
+
+function tick(){
+  const ctx_ = ensureCtx();
+  playheadT = (ctx_.currentTime - scheduledStart) * playRate;
+  if (playheadT >= restrictTo){
+    if (loopOn){
+      seekTo(restrictFrom, true);
+    } else {
+      playheadT = restrictTo;
+      pausePlayback();
+      drawRoll(); updateNowPanel();
+      return;
+    }
+  }
+  drawRoll();
+  updateNowPanel();
+  animFrame = requestAnimationFrame(tick);
+}
+
+function startPlayback(){
+  isPlaying = true;
+  document.getElementById('playBtn').textContent = '⏸ Пауза';
+  scheduleFrom(playheadT);
+  animFrame = requestAnimationFrame(tick);
+}
+function pausePlayback(){
+  isPlaying = false;
+  document.getElementById('playBtn').textContent = '▶ Играть';
+  stopAllTones();
+  if (animFrame) cancelAnimationFrame(animFrame);
+}
+function seekTo(t, keepPlaying){
+  const wasPlaying = isPlaying || keepPlaying;
+  stopAllTones();
+  if (animFrame) cancelAnimationFrame(animFrame);
+  playheadT = Math.min(Math.max(t, restrictFrom), restrictTo);
+  drawRoll(); updateNowPanel();
+  if (wasPlaying){ isPlaying = true; document.getElementById('playBtn').textContent = '⏸ Пауза'; scheduleFrom(playheadT); animFrame = requestAnimationFrame(tick); }
+}
+
+document.getElementById('playBtn').addEventListener('click', ()=>{
+  if (isPlaying) pausePlayback(); else startPlayback();
+});
+document.getElementById('loopBtn').addEventListener('click', (e)=>{
+  loopOn = !loopOn;
+  e.target.classList.toggle('toggled', loopOn);
+});
+const rateSlider = document.getElementById('rateSlider');
+rateSlider.addEventListener('input', ()=>{
+  playRate = parseFloat(rateSlider.value);
+  document.getElementById('rateVal').textContent = Math.round(playRate*100)+'%';
+  if (isPlaying) scheduleFrom(playheadT);
+});
+
+const phraseWrap = document.getElementById('phraseButtons');
+PHRASES.forEach(p=>{
+  const b = document.createElement('button');
+  b.textContent = `Фраза ${p.label}`;
+  b.addEventListener('click', ()=>{
+    restrictFrom = p.from; restrictTo = p.to;
+    seekTo(p.from, isPlaying);
+    if (!isPlaying) startPlayback();
+  });
+  phraseWrap.appendChild(b);
+});
+
+resizeCanvas();
+updateNowPanel();
+
+// ---------- sing it back ----------
+let targetIdx = 0;
+function setTarget(i){
+  targetIdx = ((i % NOTES.length) + NOTES.length) % NOTES.length;
+  document.getElementById('targetNote').textContent = NOTES[targetIdx].name;
+}
+setTarget(0);
+
+document.getElementById('nextTargetBtn').addEventListener('click', ()=> setTarget(targetIdx+1));
+document.getElementById('playTargetBtn').addEventListener('click', ()=>{
+  const ctx_ = ensureCtx();
+  tone(freqFromMidi(NOTES[targetIdx].midi), ctx_.currentTime+0.02, 0.9, 0.25);
+});
+
+// pitch detection (autocorrelation)
+function autoCorrelate(buf, sampleRate){
+  const SIZE = buf.length;
+  let rms = 0;
+  for (let i=0;i<SIZE;i++){ rms += buf[i]*buf[i]; }
+  rms = Math.sqrt(rms/SIZE);
+  if (rms < 0.01) return -1;
+
+  let r1=0, r2=SIZE-1;
+  const thres = 0.2;
+  for (let i=0;i<SIZE/2;i++){ if (Math.abs(buf[i])<thres){ r1=i; break; } }
+  for (let i=1;i<SIZE/2;i++){ if (Math.abs(buf[SIZE-i])<thres){ r2=SIZE-i; break; } }
+  const trimmed = buf.slice(r1,r2);
+  const N = trimmed.length;
+  if (N < 8) return -1;
+
+  const c = new Array(N).fill(0);
+  for (let i=0;i<N;i++){
+    for (let j=0;j<N-i;j++){ c[i] += trimmed[j]*trimmed[j+i]; }
+  }
+  let d=0; while (d < N-1 && c[d] > c[d+1]) d++;
+  let maxval=-1, maxpos=-1;
+  for (let i=d;i<N;i++){ if (c[i] > maxval){ maxval=c[i]; maxpos=i; } }
+  let T0 = maxpos;
+  if (T0 <= 0) return -1;
+  const x1 = c[T0-1] ?? c[T0], x2 = c[T0], x3 = c[T0+1] ?? c[T0];
+  const a = (x1 + x3 - 2*x2)/2;
+  const b = (x3 - x1)/2;
+  if (a) T0 = T0 - b/(2*a);
+  if (T0 <= 0) return -1;
+  return sampleRate/T0;
+}
+
+let micStream = null, micCtx = null, micAnalyser = null, micRAF = null;
+let holdGoodFrames = 0, lastScoredTarget = -1;
+
+async function startMic(){
+  try{
+    micStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
+  }catch(err){
+    document.getElementById('micStatus').textContent = 'Не удалось получить доступ к микрофону: ' + (err && err.message ? err.message : 'запрещено браузером/окружением.');
+    return false;
+  }
+  micCtx = ensureCtx();
+  const src = micCtx.createMediaStreamSource(micStream);
+  micAnalyser = micCtx.createAnalyser();
+  micAnalyser.fftSize = 2048;
+  src.connect(micAnalyser);
+  document.getElementById('micStatus').textContent = 'Слушаю — спой текущую ноту-цель.';
+  document.getElementById('needle').classList.add('show');
+  micLoop();
+  return true;
+}
+
+function stopMic(){
+  if (micRAF) cancelAnimationFrame(micRAF);
+  if (micStream) micStream.getTracks().forEach(t=>t.stop());
+  micStream = null; micAnalyser = null;
+  document.getElementById('detected').textContent = 'Микрофон выключен.';
+  document.getElementById('needle').classList.remove('show');
+  document.getElementById('micStatus').textContent = 'Нажми «Слушать» и разреши доступ к микрофону — попробуй спеть ноту в тон.';
+}
+
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function nameFromMidiRound(m){
+  const r = Math.round(m);
+  const oct = Math.floor(r/12)-1;
+  return NOTE_NAMES[((r%12)+12)%12] + oct;
+}
+
+function micLoop(){
+  const buf = new Float32Array(micAnalyser.fftSize);
+  micAnalyser.getFloatTimeDomainData(buf);
+  const freq = autoCorrelate(buf, micCtx.sampleRate);
+  const needle = document.getElementById('needle');
+  const detected = document.getElementById('detected');
+
+  if (freq > 50 && freq < 1500){
+    const targetFreq = freqFromMidi(NOTES[targetIdx].midi);
+    const sungMidi = midiFromFreq(freq);
+    const cents = (sungMidi - NOTES[targetIdx].midi) * 100;
+    const clamped = Math.max(-50, Math.min(50, cents));
+    needle.style.left = (50 + clamped) + '%';
+    const inTune = Math.abs(cents) <= 25;
+    needle.classList.toggle('good', inTune);
+    needle.classList.toggle('bad', !inTune);
+    detected.innerHTML = `слышу: <b>${nameFromMidiRound(sungMidi)}</b> (${freq.toFixed(0)} Гц) · отклонение <b>${cents>0?'+':''}${cents.toFixed(0)}¢</b>`;
+
+    if (inTune){
+      holdGoodFrames++;
+      if (holdGoodFrames > 18 && lastScoredTarget !== targetIdx){
+        lastScoredTarget = targetIdx;
+        document.getElementById('scoreGood').textContent = (parseInt(document.getElementById('scoreGood').textContent)+1);
+        document.getElementById('scoreTotal').textContent = (parseInt(document.getElementById('scoreTotal').textContent)+1);
+        setTimeout(()=> setTarget(targetIdx+1), 500);
+      }
+    } else {
+      holdGoodFrames = 0;
+    }
+  } else {
+    needle.classList.remove('good','bad');
+    needle.style.left = '50%';
+    detected.textContent = 'слушаю тишину…';
+    holdGoodFrames = 0;
+  }
+  micRAF = requestAnimationFrame(micLoop);
+}
+
+const micBtn = document.getElementById('micBtn');
+let micOn = false;
+micBtn.addEventListener('click', async ()=>{
+  if (!micOn){
+    micBtn.disabled = true;
+    const ok = await startMic();
+    micBtn.disabled = false;
+    if (ok){ micOn = true; micBtn.textContent = '⏹ Остановить'; micBtn.classList.add('toggled'); document.getElementById('scoreTotal').textContent = 0; document.getElementById('scoreGood').textContent = 0; lastScoredTarget=-1; }
+  } else {
+    stopMic();
+    micOn = false;
+    micBtn.textContent = '🎙 Слушать';
+    micBtn.classList.remove('toggled');
+  }
+});
+</script>

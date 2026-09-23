@@ -1,0 +1,708 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Импровизация</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="ear-theme.js"></script>
+<link rel="stylesheet" href="ear-common.css">
+<link rel="stylesheet" href="ear-kid.css">
+<style>
+  .page{ max-width:1180px; }
+  .layout{ grid-template-columns:1fr 290px; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; } }
+  .tabs button{ min-width:25%; }
+  @media (max-width:520px){ .tabs button{ min-width:50%; } }
+  .tabs{ flex-wrap:wrap; border-radius:14px; }
+
+  .chord-row{ display:flex; gap:.35rem; flex-wrap:wrap; justify-content:center; margin-bottom:1rem; }
+  .chord-row div{
+    min-width:58px; padding:.4rem .5rem; text-align:center; border:1.5px solid var(--line); border-radius:10px; background:var(--paper);
+    font:600 1rem var(--font-display);
+  }
+  .chord-row div small{ display:block; font:500 .62rem var(--font-mono); color:var(--muted); }
+  .chord-row div.active{ border-color:var(--brass); box-shadow:0 0 0 3px var(--brass-tint); }
+
+  .coach{
+    text-align:center; min-height:4.2rem; display:flex; flex-direction:column; justify-content:center; gap:.2rem;
+    border-radius:12px; padding:.6rem 1rem; margin-bottom:1rem; background:var(--paper); border:1px solid var(--line);
+  }
+  .coach .big{ font:600 clamp(1.15rem, 3vw, 1.5rem) var(--font-display); }
+  .coach .small{ font-size:.85rem; color:var(--muted); }
+  .coach.listen{ border-color:var(--tone-5); }
+  .coach.listen .big{ color:var(--tone-5); }
+  .coach.you{ border-color:var(--good); background:var(--good-bg); }
+  .coach.you .big{ color:var(--good); }
+  .coach.card .big{ color:var(--brass-deep); }
+
+  .beats{ display:flex; gap:.35rem; justify-content:center; margin-bottom:.9rem; }
+  .beats i{ width:11px; height:11px; border-radius:50%; background:var(--line); transition:background .08s; }
+  .beats i.on{ background:var(--brass); }
+  .beats i.on.first{ background:var(--tone-char); }
+
+  .legend{ display:flex; gap:.9rem; justify-content:center; flex-wrap:wrap; font-size:.76rem; color:var(--muted); margin-bottom:.6rem; }
+  .legend i{ display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:.3rem; vertical-align:-1px; }
+
+  .tempo-row{ display:flex; align-items:center; gap:.6rem; }
+  .tempo-row input{ flex:1; }
+  .tempo-val{ font-family:var(--font-mono); font-size:.85rem; color:var(--brass-deep); min-width:4.5em; text-align:right; }
+  .settings textarea{
+    font:500 .9rem var(--font-mono); color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:.5rem .6rem; resize:vertical; min-height:3.2rem;
+  }
+  .takes{ display:flex; flex-direction:column; gap:.5rem; margin-top:.5rem; }
+  .takes div{ display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; font-size:.8rem; color:var(--muted); }
+  .takes audio{ height:32px; max-width:100%; }
+  .rec-btn.recording{ background:var(--bad); border-color:var(--bad); color:var(--on-brass); }
+  .phrase-text{ font:500 .85rem var(--font-mono); color:var(--muted); text-align:center; min-height:1.2em; margin:-.4rem 0 .8rem; }
+  .play-btn.is-stop{ background:var(--bad); }
+  .context-bar{ text-transform:none; }   /* регистр важен: vi — минор, VI — мажор */
+</style>
+
+<div class="page">
+  <nav class="site-nav" aria-label="Тренажёры">
+    <a href="cadence.html">Каданс</a>
+    <a href="solfege.html">Пение с листа</a>
+    <a href="caged.html">CAGED</a>
+    <a href="modes.html">Лады</a>
+    <a href="improv.html" aria-current="page">Импровизация</a>
+  </nav>
+
+  <header class="hero">
+    <h1>Импровизация</h1>
+    <p class="tagline">Подложка по кругу, гамма и звуки аккорда на грифе — и задания, которые не дают играть на автопилоте</p>
+  </header>
+
+  <main class="layout">
+    <section class="trainer" aria-label="Тренажёр">
+      <div class="tabs" role="tablist" aria-label="Режим">
+        <button type="button" data-tab="free" role="tab" class="active">Свободно</button>
+        <button type="button" data-tab="qa" role="tab">Вопрос–ответ</button>
+        <button type="button" data-tab="limits" role="tab">Ограничения</button>
+        <button type="button" data-tab="targets" role="tab">Целевые ноты</button>
+      </div>
+
+      <div class="context-bar">
+        <span id="keyReadout">—</span>
+        <span id="scaleReadout">—</span>
+      </div>
+
+      <div class="chord-row" id="chordRow"></div>
+      <div class="beats" id="beats"><i></i><i></i><i></i><i></i></div>
+      <div class="coach" id="coach"><div class="big" id="coachBig">Нажмите «Старт»</div><div class="small" id="coachSmall"></div></div>
+      <div class="phrase-text" id="phraseText"></div>
+
+      <div class="legend" id="legend">
+        <span><i style="border:2px solid var(--tone-r)"></i>тоника гаммы</span>
+        <span><i style="background:var(--tone-r)"></i>1</span>
+        <span><i style="background:var(--tone-3)"></i>3</span>
+        <span><i style="background:var(--tone-5)"></i>5</span>
+        <span><i style="background:var(--tone-7)"></i>7</span>
+        <span><i style="border:3px solid var(--tone-char)"></i>цель</span>
+      </div>
+      <div class="board-wrap"><svg class="board" id="board" viewBox="0 0 1000 232" role="img" aria-label="Гриф"></svg></div>
+
+      <div class="stage">
+        <div class="btn-row">
+          <button type="button" class="play-btn" id="startBtn">▶ Старт</button>
+          <button type="button" class="ghost-btn rec-btn" id="recBtn">● Запись</button>
+        </div>
+        <p class="hint" id="modeHint" style="text-align:center"></p>
+        <div class="takes" id="takes"></div>
+      </div>
+    </section>
+
+    <aside class="settings" aria-label="Настройки">
+      <h2>Подложка</h2>
+      <label for="progSelect">Последовательность
+        <select id="progSelect"></select>
+      </label>
+      <label for="customInput" id="customRow" hidden>Свои аккорды — по такту через пробел или «|»
+        <textarea id="customInput" spellcheck="false" placeholder="Am | F | C | G"></textarea>
+        <span class="hint">Первый аккорд — тоника. Можно: C, Am, G7, Cmaj7, Dm7, Bdim, Bm7b5, F#m. Два такта: Am*2.</span>
+      </label>
+      <label for="keySelect">Тональность (тоника)
+        <select id="keySelect"></select>
+      </label>
+      <label for="scaleSelect">Гамма для соло
+        <select id="scaleSelect"></select>
+      </label>
+      <label for="styleSelect">Стиль
+        <select id="styleSelect">
+          <option value="rock">Рок, ровные восьмые</option>
+          <option value="swing">Свинг</option>
+          <option value="ballad">Баллада</option>
+          <option value="none">Без барабанов</option>
+        </select>
+      </label>
+      <label for="tempoSlider">Темп
+        <span class="tempo-row">
+          <input type="range" id="tempoSlider" min="50" max="180" step="2" value="92">
+          <span class="tempo-val" id="tempoValue">92 уд/мин</span>
+        </span>
+      </label>
+      <label for="posSelect">На грифе
+        <select id="posSelect"></select>
+      </label>
+      <label for="labelSelect">Подписи
+        <select id="labelSelect">
+          <option value="degree">Ступени от тоники</option>
+          <option value="note">Ноты</option>
+          <option value="none">Без подписей</option>
+        </select>
+      </label>
+      <label class="checkbox"><input type="checkbox" id="chordTonesToggle" checked> Подсвечивать звуки текущего аккорда</label>
+      <label class="checkbox"><input type="checkbox" id="countInToggle" checked> Такт отсчёта перед стартом</label>
+      <label class="checkbox"><input type="checkbox" id="bassToggle" checked> Бас</label>
+      <label for="compSelect">Аккорды играет
+        <select id="compSelect"></select>
+      </label>
+
+      <div id="qaSettings" hidden style="display:flex;flex-direction:column;gap:1.1rem">
+        <h2 style="margin-top:.5rem">Вопрос–ответ</h2>
+        <label for="qaLevel">Сложность фраз
+          <select id="qaLevel">
+            <option value="1">Простые — четверти, поступенно</option>
+            <option value="2">Средние — восьмые, терции</option>
+            <option value="3">Сложные — синкопы, скачки</option>
+          </select>
+        </label>
+        <label for="qaShow">Показывать фразу на грифе
+          <select id="qaShow">
+            <option value="answer">Пока вы отвечаете</option>
+            <option value="always">Сразу, пока звучит</option>
+            <option value="never">Не показывать — только слух</option>
+          </select>
+        </label>
+        <label for="phraseInstSelect">Фразу играет
+          <select id="phraseInstSelect"></select>
+        </label>
+      </div>
+      <div id="limitsSettings" hidden style="display:flex;flex-direction:column;gap:1.1rem">
+        <h2 style="margin-top:.5rem">Ограничения</h2>
+        <label for="limitBars">Новое задание каждые
+          <select id="limitBars">
+            <option value="4">4 такта</option>
+            <option value="8">8 тактов</option>
+            <option value="16">16 тактов</option>
+          </select>
+        </label>
+      </div>
+      <div class="status" id="audioStatus" hidden></div>
+    </aside>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+<script src="ear-audio.js"></script>
+<script src="ear-fretboard.js"></script>
+<script>
+(function(){
+  'use strict';
+  var F = EarFret, mod = F.mod;
+
+  // ---------- заготовки ----------
+  // chords: [сдвиг от тоники в полутонах, качество, тактов]
+  var PROGS = [
+    { id:'pop-1451', group:'Мажор', name:'I – IV – V – I', scale:'ionian', chords:[[0,'maj',1],[5,'maj',1],[7,'maj',1],[0,'maj',1]] },
+    { id:'pop-1564', group:'Мажор', name:'I – V – vi – IV', scale:'ionian', chords:[[0,'maj',1],[7,'maj',1],[9,'min',1],[5,'maj',1]] },
+    { id:'pop-1645', group:'Мажор', name:'I – vi – IV – V', scale:'ionian', chords:[[0,'maj',1],[9,'min',1],[5,'maj',1],[7,'maj',1]] },
+    { id:'jazz-251', group:'Мажор', name:'ii – V – I (джаз)', scale:'ionian', chords:[[2,'m7',1],[7,'7',1],[0,'maj7',2]] },
+    { id:'creep',    group:'Мажор', name:'I – III – IV – iv (заимствованный минорный iv, как в Creep)', scale:'ionian', chords:[[0,'maj',1],[4,'maj',1],[5,'maj',1],[5,'min',1]] },
+    { id:'mixo-rock',group:'Мажор', name:'I – ♭VII – IV – I (миксолидийский рок)', scale:'mixolydian', chords:[[0,'maj',1],[10,'maj',1],[5,'maj',1],[0,'maj',1]] },
+    { id:'blues12',  group:'Блюз', name:'Блюз, 12 тактов', scale:'blues', chords:[[0,'7',4],[5,'7',2],[0,'7',2],[7,'7',1],[5,'7',1],[0,'7',1],[7,'7',1]] },
+    { id:'minblues', group:'Блюз', name:'Минорный блюз, 12 тактов', scale:'minpent', chords:[[0,'m7',4],[5,'m7',2],[0,'m7',2],[8,'7',1],[7,'7',1],[0,'m7',1],[7,'7',1]] },
+    { id:'min-aeol', group:'Минор', name:'i – ♭VI – ♭VII – i', scale:'aeolian', chords:[[0,'min',1],[8,'maj',1],[10,'maj',1],[0,'min',1]] },
+    { id:'min-145',  group:'Минор', name:'i – iv – v – i', scale:'aeolian', chords:[[0,'min',1],[5,'min',1],[7,'min',1],[0,'min',1]] },
+    { id:'min-rock', group:'Минор', name:'i – ♭VII – ♭VI – ♭VII (минорный рок)', scale:'aeolian', chords:[[0,'min',1],[10,'maj',1],[8,'maj',1],[10,'maj',1]] },
+    { id:'andalusian', group:'Минор', name:'i – ♭VII – ♭VI – V (андалузский каданс)', scale:'harmonic', chords:[[0,'min',1],[10,'maj',1],[8,'maj',1],[7,'maj',1]] }
+  ];
+  F.MODES.forEach(function(m){
+    var list = m.vamp.map(function(c){ return [c[0], c[1], 1]; });
+    if(list.length === 3) list.push([list[0][0], list[0][1], 1]);
+    if(list.length === 2) list = list.map(function(c){ return [c[0], c[1], 2]; });
+    PROGS.push({ id:'vamp-' + m.id, group:'Ладовые петли', name:m.name.replace(/ \(.*\)/, '') + ': ' + m.vampName, scale:m.id, chords:list });
+  });
+  PROGS.push({ id:'custom', group:'Свои', name:'Свои аккорды…', scale:'auto', chords:[] });
+
+  var CARDS = [
+    'Только звуки аккорда на сильных долях',
+    'Начинайте каждую фразу с терции аккорда',
+    'Только три ноты — любые, но только три',
+    'Играйте на одной струне',
+    'Мотив из трёх нот — и повторите его на следующем аккорде',
+    'Одна длинная нота на такт, остальное — тишина',
+    'Только ритм: одна нота, интересный рисунок',
+    'Фраза «вопрос» заканчивается вверх, «ответ» — вниз, на тонике',
+    'Пропускайте первую долю каждого такта',
+    'Только восьмые, без остановки',
+    'Каждую фразу заканчивайте на терции аккорда',
+    'Играйте тихо и медленно — пауз больше, чем нот',
+    'Поднимайтесь по гамме, но каждый раз с другой ступени',
+    'Двойные ноты: две соседние струны вместе',
+    'Скачок, потом шаг в обратную сторону',
+    'Только в пределах четырёх ладов — без сдвига руки'
+  ];
+
+  // ---------- состояние ----------
+  var STORAGE_KEY = 'improv-trainer-v1';
+  var state = { tab:'free', prog:'pop-1564', key:0, scale:'auto', style:'rock', tempo:92, pos:'auto', labels:'degree',
+    chordTones:true, countIn:true, bass:true, comp:'epiano', qaLevel:1, qaShow:'answer', phraseInst:'nylon', limitBars:8,
+    custom:'Am | F | C | G' };
+  var PERSIST = Object.keys(state);
+  try{
+    var saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '{}');
+    PERSIST.forEach(function(k){ if(saved[k] !== undefined) state[k] = saved[k]; });
+  }catch(e){}
+  // Параметры из ссылки (например, из «Ладов»): ?key=2&prog=vamp-dorian
+  (function(){
+    var q = new URLSearchParams(location.search);
+    if(q.has('key')) state.key = mod(+q.get('key'), 12);
+    if(q.has('prog') && PROGS.some(function(p){ return p.id === q.get('prog'); })){ state.prog = q.get('prog'); state.scale = 'auto'; }
+  })();
+  function save(){
+    try{ var o = {}; PERSIST.forEach(function(k){ o[k] = state[k]; }); window.localStorage.setItem(STORAGE_KEY, JSON.stringify(o)); }catch(e){}
+  }
+
+  // ---------- свои аккорды ----------
+  var LETTER_PC = { C:0, D:2, E:4, F:5, G:7, A:9, B:11, H:11 };
+  function parseCustom(text){
+    var out = [], errors = [];
+    text.split(/[\s|]+/).filter(Boolean).forEach(function(tok){
+      var m = /^([A-Ha-h])([#♯b♭]?)(maj7|m7b5|m7♭5|m7|min7|min|m|dim|°|7|maj)?(?:\*(\d+))?$/.exec(tok);
+      if(!m){ errors.push(tok); return; }
+      var pc = mod(LETTER_PC[m[1].toUpperCase()] + (m[2] === '#' || m[2] === '♯' ? 1 : m[2] ? -1 : 0), 12);
+      var qmap = { 'maj7':'maj7', 'm7b5':'m7b5', 'm7♭5':'m7b5', 'm7':'m7', 'min7':'m7', 'min':'min', 'm':'min', 'dim':'dim', '°':'dim', '7':'7', 'maj':'maj' };
+      out.push({ pc:pc, q: m[3] ? qmap[m[3]] : 'maj', bars: m[4] ? Math.max(1, Math.min(8, +m[4])) : 1 });
+    });
+    return { chords: out, errors: errors };
+  }
+
+  // ---------- текущая подложка ----------
+  function currentProg(){
+    var p = PROGS.filter(function(x){ return x.id === state.prog; })[0] || PROGS[0];
+    if(p.id !== 'custom') return { name:p.name, key:state.key, scale:p.scale, chords:p.chords.map(function(c){ return { pc:mod(state.key + c[0], 12), q:c[1], bars:c[2] }; }) };
+    var parsed = parseCustom(state.custom);
+    if(!parsed.chords.length) parsed.chords = [{ pc:9, q:'min', bars:1 }];
+    var first = parsed.chords[0];
+    var minor = ['min','m7','dim','m7b5'].indexOf(first.q) >= 0;
+    return { name:'Свои аккорды', key:first.pc, scale: minor ? 'aeolian' : 'ionian', chords: parsed.chords, errors: parsed.errors };
+  }
+  function scaleInfo(prog){
+    var id = state.scale === 'auto' ? prog.scale : state.scale;
+    var sc = F.SCALES[id] || F.SCALES.ionian;
+    return { id:id, name:sc.name, steps:sc.steps, minor: sc.steps.indexOf(3) >= 0 && sc.steps.indexOf(4) < 0 };
+  }
+
+  var P = null, S = null;   // подложка и гамма
+  function rebuild(){
+    P = currentProg(); S = scaleInfo(P);
+    var flats = F.useFlats(P.key, S.steps);
+    var prevAvg = 60;
+    P.bars = [];
+    P.chords.forEach(function(c, i){
+      var v = F.voiceChord(c.pc, c.q, prevAvg); prevAvg = v.avg;
+      c.v = v; c.name = F.chordName(c.pc, c.q, flats); c.idx = i;
+      for(var b = 0; b < c.bars; b++) P.bars.push({ chord:c, first: b === 0, last: b === c.bars - 1 });
+    });
+    P.flats = flats;
+    els.keyReadout.textContent = F.noteName(P.key, flats) + ' · ' + P.name;
+    els.scaleReadout.textContent = S.name;
+    els.chordRow.innerHTML = '';
+    P.chords.forEach(function(c){
+      var d = document.createElement('div');
+      d.innerHTML = c.name + '<small>' + c.bars + ' такт' + (c.bars === 1 ? '' : c.bars < 5 ? 'а' : 'ов') + '</small>';
+      els.chordRow.appendChild(d);
+    });
+    fillPositions();
+    renderBoard();
+  }
+
+  // ---------- гриф ----------
+  var live = { chord:null, next:null, lastBeat:false, phrase:null, phraseNow:-1, showPhrase:false };
+  function zone(){
+    var list = F.positions(P.key, S.minor);
+    if(state.pos === 'all') return { lo:0, hi:F.MAX_FRET };
+    var idx = state.pos === 'auto' ? Math.max(0, list.findIndex(function(p){ return p.shape === 'E'; })) : Math.min(+state.pos, list.length - 1);
+    var p = list[idx] || list[0];
+    return { lo:p.lo, hi:p.hi, label:p.label };
+  }
+  function renderBoard(){
+    var z = zone();
+    var dots = [];
+    var chord = live.chord;
+    var guide = state.tab === 'targets';
+    F.scaleDots(P.key, S.steps, z.lo, z.hi).forEach(function(d){
+      var label = state.labels === 'none' ? '' : state.labels === 'note' ? F.noteName(P.key + d.iv, P.flats) : F.ivLabel(d.iv, S.steps);
+      var cls = 'scale' + (d.iv === 0 ? ' r' : '');
+      if(chord && state.chordTones){
+        var pc = mod(P.key + d.iv, 12);
+        if(chord.v.pcs.indexOf(pc) >= 0){
+          var role = F.chordRole(pc - chord.pc);
+          cls = role;
+          if(guide && role !== 't3' && role !== 't7') cls += ' faint';
+        }
+      }
+      dots.push({ s:d.s, f:d.f, cls:cls, label:label });
+    });
+    // Звуки аккорда вне гаммы (например, III в Creep): тоже показываем
+    if(chord && state.chordTones){
+      for(var s = 0; s < 6; s++) for(var f = z.lo; f <= z.hi; f++){
+        var pc2 = mod(F.OPEN[s] + f, 12);
+        if(chord.v.pcs.indexOf(pc2) >= 0 && S.steps.indexOf(mod(pc2 - P.key, 12)) < 0){
+          var role2 = F.chordRole(pc2 - chord.pc);
+          dots.push({ s:s, f:f, cls: role2 + (guide && role2 !== 't3' && role2 !== 't7' ? ' faint' : ''), label: state.labels === 'none' ? '' : state.labels === 'note' ? F.noteName(pc2, P.flats) : F.ivLabel(pc2 - P.key) });
+        }
+      }
+    }
+    if(guide && live.next && live.lastBeat){
+      var tpc = mod(live.next.pc + F.QUALITY[live.next.q].iv[1], 12);
+      for(var s2 = 0; s2 < 6; s2++) for(var f2 = z.lo; f2 <= z.hi; f2++){
+        if(mod(F.OPEN[s2] + f2, 12) === tpc) dots.push({ s:s2, f:f2, cls:'target', r:16 });
+      }
+    }
+    if(live.phrase && live.showPhrase){
+      live.phrase.forEach(function(n, i){
+        dots.push({ s:n.s, f:n.f, cls:'phrase' + (i === live.phraseNow ? ' now' : ''), label:String(i + 1) });
+      });
+    }
+    F.draw(els.board, { regions: state.pos === 'all' ? [] : [{ lo:z.lo, hi:z.hi, label:z.label }], dots:dots });
+  }
+
+  // ---------- фразы «вопрос–ответ» ----------
+  var QA_RHYTHMS = {
+    1: [[2,2,2,2],[4,2,2],[2,2,4],[2,2,2,2]],
+    2: [[2,1,1,2,2],[1,1,2,2,2],[2,2,1,1,2],[1,1,1,1,2,2],[3,1,2,2]],
+    3: [[1,2,1,2,2],[3,3,2],[1,1,1,2,1,2],[2,1,2,1,2],[1,2,2,1,2]]
+  };
+  function makePhrase(barIdx){
+    var z = zone(), lvl = +state.qaLevel;
+    var pool = F.scaleDots(P.key, S.steps, z.lo, z.hi).map(function(d){ return d.midi; })
+      .filter(function(m, i, a){ return a.indexOf(m) === i; }).sort(function(a, b){ return a - b; });
+    if(state.pos === 'all') pool = pool.filter(function(m){ return m >= 52 && m <= 76; });
+    var notes = [], pos = 0;
+    var r1 = QA_RHYTHMS[lvl][Math.floor(Math.random() * QA_RHYTHMS[lvl].length)];
+    var r2 = QA_RHYTHMS[lvl][Math.floor(Math.random() * QA_RHYTHMS[lvl].length)];
+    // вторая половина фразы короче: в конце — длинная нота
+    var rhythm = r1.concat(r2.slice(0, Math.max(1, r2.length - 2))).concat([0]);
+    var used = r1.reduce(function(a, b){ return a + b; }, 0) + r2.slice(0, Math.max(1, r2.length - 2)).reduce(function(a, b){ return a + b; }, 0);
+    rhythm[rhythm.length - 1] = 16 - used;
+    var idx = -1, prevF;
+    rhythm.forEach(function(dur, k){
+      var bar = P.bars[(barIdx + Math.floor(pos / 8)) % P.bars.length];
+      var tones = bar.chord.v.pcs;
+      var cand;
+      if(idx < 0){
+        cand = pool.map(function(m, i){ return i; }).filter(function(i){ return tones.indexOf(mod(pool[i], 12)) >= 0; });
+        idx = cand[Math.floor(cand.length / 2 + (Math.random() - .5) * 3)] ; if(idx === undefined) idx = Math.floor(pool.length / 2);
+      } else {
+        var maxJump = lvl === 1 ? 1 : lvl === 2 ? 2 : 4;
+        var options = [];
+        for(var j = -maxJump; j <= maxJump; j++){
+          var t = idx + j;
+          if(t < 0 || t >= pool.length) continue;
+          var w = j === 0 ? .3 : Math.abs(j) === 1 ? 3 : Math.abs(j) === 2 ? 1.5 : .6;
+          var strong = pos % 4 === 0;
+          if(strong && tones.indexOf(mod(pool[t], 12)) >= 0) w *= 3;
+          if(k === rhythm.length - 1) w *= tones.indexOf(mod(pool[t], 12)) >= 0 ? 6 : .1;
+          options.push({ t:t, w:w });
+        }
+        var sum = options.reduce(function(a, o){ return a + o.w; }, 0), r = Math.random() * sum;
+        for(var o = 0; o < options.length; o++){ r -= options[o].w; if(r <= 0){ idx = options[o].t; break; } }
+      }
+      var place = F.placeMidi(pool[idx], z.lo, z.hi, prevF);
+      prevF = place.f;
+      notes.push({ midi:pool[idx], start:pos, dur:dur, s:place.s, f:place.f });
+      pos += dur;
+    });
+    return notes;
+  }
+
+  // ---------- расписание подложки ----------
+  function beatSec(){ return 60 / state.tempo; }
+  function swingT(eighth, b){
+    var beat = Math.floor(eighth / 2), off = eighth % 2;
+    return (beat + (off ? (state.style === 'swing' ? 2 / 3 : .5) : 0)) * b;
+  }
+
+  var run = { playing:false, cards:[], cycleBars:0 };
+  function buildTimeline(){
+    var b = beatSec(), bar = 4 * b;
+    var nBars = P.bars.length * Math.max(1, Math.round(48 / P.bars.length));
+    var t0 = state.countIn ? bar : 0;
+    var ev = [];
+    if(state.countIn){
+      for(var k = 0; k < 4; k++) ev.push({ time:k * b, dur:.05, click: k === 0 ? 'accent' : 'beat', onStart:(function(k){ return function(){ setBeat(k); coach('Отсчёт: ' + (4 - k), ''); }; })(k) });
+    }
+    var comp = state.comp;
+    var cardEvery = +state.limitBars;
+    var cardIdx = Math.floor(Math.random() * CARDS.length);
+    for(var i = 0; i < nBars; i++){
+      (function(i){
+        var entry = P.bars[i % P.bars.length], c = entry.chord, T = t0 + i * bar;
+        var nextEntry = P.bars[(i + 1) % P.bars.length];
+        var nextRoot = nextEntry.chord.v.bass;
+        // UI: такт и доли
+        for(var q = 0; q < 4; q++){
+          ev.push({ time:T + q * b, dur:.01, midi:[], onStart:(function(q){ return function(){ onBeat(i, q, entry, nextEntry); }; })(q) });
+        }
+        // Аккорды
+        var V = c.v.notes;
+        if(state.style === 'rock'){
+          [[0,2,.55],[3,1,.4],[4,2,.5],[6,1,.38],[7,1,.42]].forEach(function(h){ ev.push({ time:T + swingT(h[0], b), dur:h[1] * b / 2 * .9, inst:comp, midi:V, vel:h[2] }); });
+        } else if(state.style === 'swing'){
+          ev.push({ time:T, dur:b * .45, inst:comp, midi:V, vel:.5 });
+          ev.push({ time:T + swingT(3, b), dur:b * .45, inst:comp, midi:V, vel:.45 });
+        } else {
+          ev.push({ time:T, dur:bar * .97, inst:comp, midi:V, vel:.45 });
+          if(state.style === 'ballad') ev.push({ time:T + 2 * b, dur:b * 1.9, inst:comp, midi:[V[V.length - 1] + 12], vel:.3 });
+        }
+        // Бас
+        if(state.bass){
+          var R = c.v.bass, fifth = R + 7 > 43 ? R - 5 : R + 7;
+          var third = R + (F.QUALITY[c.q].iv[1]);
+          if(state.style === 'rock'){
+            for(var e = 0; e < 8; e++) ev.push({ time:T + e * b / 2, dur:b / 2 * .85, inst:'bass', midi:[e === 7 && entry.last && nextRoot !== R ? nextRoot + (nextRoot > R ? -1 : 1) : R], vel: e % 2 ? .55 : .72 });
+          } else if(state.style === 'swing'){
+            var approach = entry.last ? nextRoot - 1 : fifth + 2;
+            [R, third, fifth, approach].forEach(function(m, q){ ev.push({ time:T + q * b, dur:b * .9, inst:'bass', midi:[m], vel:.7 }); });
+          } else {
+            ev.push({ time:T, dur:b * 1.9, inst:'bass', midi:[R], vel:.72 });
+            ev.push({ time:T + 2 * b, dur:b * 1.9, inst:'bass', midi:[fifth], vel:.6 });
+          }
+        }
+        // Барабаны
+        if(state.style === 'rock'){
+          for(var h = 0; h < 8; h++) ev.push({ time:T + h * b / 2, dur:.01, drum:'hat', vel: h % 2 ? .45 : .8 });
+          [0, 4, 5].forEach(function(p){ ev.push({ time:T + p * b / 2, dur:.01, drum:'kick', vel: p === 5 ? .6 : .9 }); });
+          [2, 6].forEach(function(p){ ev.push({ time:T + p * b / 2, dur:.01, drum:'snare', vel:.8 }); });
+          if(i % 4 === 3) ev.push({ time:T + 7 * b / 2, dur:.01, drum:'snare', vel:.5 });
+        } else if(state.style === 'swing'){
+          [0,1,2,3].forEach(function(q){ ev.push({ time:T + q * b, dur:.01, drum:'hat', vel:.7 }); ev.push({ time:T + q * b, dur:.01, drum:'kick', vel:.25 }); });
+          [3, 7].forEach(function(p){ ev.push({ time:T + swingT(p, b), dur:.01, drum:'hat', vel:.45 }); });
+          [1, 3].forEach(function(q){ ev.push({ time:T + q * b, dur:.01, drum:'rim', vel:.7 }); });
+        } else if(state.style === 'ballad'){
+          [0,1,2,3].forEach(function(q){ ev.push({ time:T + q * b, dur:.01, drum:'hat', vel:.4 }); });
+          ev.push({ time:T, dur:.01, drum:'kick', vel:.8 });
+          ev.push({ time:T + 2 * b, dur:.01, drum:'rim', vel:.8 });
+        }
+        // Вопрос–ответ: 2 такта фраза, 2 такта ваша очередь
+        if(state.tab === 'qa' && i % 4 === 0){
+          var phrase = makePhrase(i % P.bars.length);
+          ev.push({ time:T, dur:.01, midi:[], onStart:function(){ qaTurn('listen', phrase); } });
+          ev.push({ time:T + 2 * bar, dur:.01, midi:[], onStart:function(){ qaTurn('you', phrase); } });
+          phrase.forEach(function(n, k){
+            ev.push({ time:T + swingT(n.start, b), dur:Math.max(.15, n.dur * b / 2 * .92), inst:state.phraseInst, midi:[n.midi], vel:.8, strum:0,
+              onStart:function(){ live.phraseNow = k; if(live.showPhrase) renderBoard(); } });
+          });
+        }
+        // Ограничения: новая карточка
+        if(state.tab === 'limits' && i % cardEvery === 0){
+          var card = CARDS[cardIdx % CARDS.length]; cardIdx += 1 + Math.floor(Math.random() * 3);
+          ev.push({ time:T, dur:.01, midi:[], onStart:function(){ run.card = card; run.cardStart = i; } });
+        }
+      })(i);
+    }
+    return { ev:ev, end:t0 + nBars * bar };
+  }
+
+  // ---------- UI во время игры ----------
+  function setBeat(q){ Array.prototype.forEach.call(els.beats.children, function(x, j){ x.classList.toggle('on', j <= q); x.classList.toggle('first', j === 0); }); }
+  function coach(big, small, cls){
+    els.coachBig.textContent = big; els.coachSmall.textContent = small || '';
+    els.coach.className = 'coach' + (cls ? ' ' + cls : '');
+  }
+  function onBeat(i, q, entry, nextEntry){
+    setBeat(q);
+    var changed = live.chord !== entry.chord;
+    live.chord = entry.chord;
+    live.next = nextEntry.chord;
+    var lastBeat = q === 3 && entry.last && nextEntry.chord !== entry.chord;
+    var needDraw = changed || lastBeat !== live.lastBeat;
+    live.lastBeat = lastBeat;
+    if(changed){
+      Array.prototype.forEach.call(els.chordRow.children, function(x, j){ x.classList.toggle('active', j === entry.chord.idx); });
+    }
+    if(state.tab === 'free' && q === 0){
+      coach(entry.chord.name, 'Звуки аккорда: ' + entry.chord.v.pcs.map(function(pc){ return F.noteName(pc, P.flats); }).join(' · '));
+    } else if(state.tab === 'targets'){
+      var n = nextEntry.chord, t3 = mod(n.pc + F.QUALITY[n.q].iv[1], 12);
+      var cur3 = mod(entry.chord.pc + F.QUALITY[entry.chord.q].iv[1], 12);
+      var q7 = F.QUALITY[entry.chord.q].iv[3];
+      var big = entry.chord.name + ': терция ' + F.noteName(cur3, P.flats) + (q7 !== undefined ? ', септима ' + F.noteName(entry.chord.pc + q7, P.flats) : '');
+      coach(big, lastBeat ? 'Сейчас — к терции следующего аккорда: ' + F.noteName(t3, P.flats) + ' (' + n.name + ')' : 'Целься в терцию на первой доле каждого аккорда', lastBeat ? 'card' : '');
+    } else if(state.tab === 'limits' && run.card){
+      var left = +state.limitBars - (i - run.cardStart);
+      coach(run.card, 'Ещё ' + left + ' ' + (left === 1 ? 'такт' : left < 5 ? 'такта' : 'тактов') + ' · аккорд ' + entry.chord.name, 'card');
+    }
+    if(needDraw) renderBoard();
+  }
+  function qaTurn(who, phrase){
+    live.phrase = phrase; live.phraseNow = -1;
+    live.showPhrase = state.qaShow === 'always' || (state.qaShow === 'answer' && who === 'you');
+    var names = phrase.map(function(n){ return F.noteName(n.midi, P.flats); }).join(' ');
+    if(who === 'listen'){ coach('Слушайте фразу', '2 такта', 'listen'); els.phraseText.textContent = state.qaShow === 'always' ? names : ''; }
+    else { coach('Ваша очередь — повторите', 'потом можно ответить своей фразой', 'you'); els.phraseText.textContent = state.qaShow !== 'never' ? 'Было: ' + names : ''; }
+    renderBoard();
+  }
+
+  function start(){
+    if(run.playing){ stop(); return; }
+    run.playing = true;
+    els.startBtn.textContent = '■ Стоп'; els.startBtn.classList.add('is-stop');
+    loop();
+  }
+  function loop(){
+    var tl = buildTimeline();
+    EarAudio.play(tl.ev, { endAt: tl.end, onEnd:function(){
+      if(!run.playing) return;
+      // При повторе отсчёт не нужен — подложка продолжается сразу.
+      var ci = state.countIn; state.countIn = false; loop(); state.countIn = ci;
+    } });
+  }
+  function stop(){
+    run.playing = false; run.card = null;
+    EarAudio.stop();
+    els.startBtn.textContent = '▶ Старт'; els.startBtn.classList.remove('is-stop');
+    live.chord = null; live.phrase = null; live.lastBeat = false;
+    setBeat(-1);
+    Array.prototype.forEach.call(els.chordRow.children, function(x){ x.classList.remove('active'); });
+    els.phraseText.textContent = '';
+    coach('Нажмите «Старт»', MODE_HINTS[state.tab]);
+    renderBoard();
+  }
+
+  var MODE_HINTS = {
+    free: 'Играйте что угодно. Цветные точки — звуки звучащего аккорда: на них фраза «садится».',
+    qa: 'Тренажёр играет фразу на 2 такта, потом 2 такта тишины — повторите её, затем ответьте своей.',
+    limits: 'Каждые несколько тактов — новое правило. Ограничения выбивают из привычных «коробочек».',
+    targets: 'Ведение терций: на смене аккорда попадайте в его терцию. В последнюю долю перед сменой цель обведена.'
+  };
+
+  // ---------- запись ----------
+  var recording = false, takeN = 0;
+  function toggleRec(){
+    if(!recording){
+      EarAudio.startRecording().then(function(){
+        recording = true; els.recBtn.classList.add('recording'); els.recBtn.textContent = '■ Остановить запись';
+        if(!run.playing) start();
+      }).catch(function(e){ setStatus('Запись недоступна: ' + (e && e.message ? e.message : 'нет доступа к микрофону')); });
+    } else {
+      recording = false; els.recBtn.classList.remove('recording'); els.recBtn.textContent = '● Запись';
+      EarAudio.stopRecording().then(function(blob){
+        if(!blob) return;
+        takeN++;
+        var url = URL.createObjectURL(blob);
+        var row = document.createElement('div');
+        row.innerHTML = '<span>Дубль ' + takeN + '</span><audio controls src="' + url + '"></audio><a href="' + url + '" download="импровизация-' + takeN + '.webm">сохранить</a>';
+        els.takes.insertBefore(row, els.takes.firstChild);
+      });
+    }
+  }
+  function setStatus(t){ els.audioStatus.textContent = t; els.audioStatus.hidden = !t; }
+
+  // ---------- настройки ----------
+  var els = {};
+  ['keyReadout','scaleReadout','chordRow','beats','coach','coachBig','coachSmall','phraseText','board','startBtn','recBtn','modeHint','takes',
+   'progSelect','customRow','customInput','keySelect','scaleSelect','styleSelect','tempoSlider','tempoValue','posSelect','labelSelect',
+   'chordTonesToggle','countInToggle','bassToggle','compSelect','qaSettings','qaLevel','qaShow','phraseInstSelect','limitsSettings','limitBars','audioStatus'
+  ].forEach(function(id){ els[id] = document.getElementById(id); });
+  var tabButtons = Array.prototype.slice.call(document.querySelectorAll('.tabs button'));
+
+  function fillPositions(){
+    var list = F.positions(P.key, S.minor);
+    els.posSelect.innerHTML = '<option value="auto">Позиция формы E</option><option value="all">Весь гриф</option>';
+    list.forEach(function(p, i){ var o = document.createElement('option'); o.value = i; o.textContent = p.label[0].toUpperCase() + p.label.slice(1); els.posSelect.appendChild(o); });
+    els.posSelect.value = state.pos;
+    if(els.posSelect.value !== String(state.pos)){ state.pos = 'auto'; els.posSelect.value = 'auto'; }
+  }
+
+  function showTab(tab){
+    var wasPlaying = run.playing;
+    if(wasPlaying) stop();
+    state.tab = tab; save();
+    tabButtons.forEach(function(b){ var on = b.dataset.tab === tab; b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    els.qaSettings.hidden = tab !== 'qa';
+    els.limitsSettings.hidden = tab !== 'limits';
+    els.modeHint.textContent = MODE_HINTS[tab];
+    coach('Нажмите «Старт»', MODE_HINTS[tab]);
+    renderBoard();
+    if(wasPlaying) start();
+  }
+
+  function restartIfPlaying(){ if(run.playing){ stop(); start(); } }
+
+  (function initSelects(){
+    var groups = {};
+    PROGS.forEach(function(p){
+      if(!groups[p.group]){ groups[p.group] = document.createElement('optgroup'); groups[p.group].label = p.group; els.progSelect.appendChild(groups[p.group]); }
+      var o = document.createElement('option'); o.value = p.id; o.textContent = p.name; groups[p.group].appendChild(o);
+    });
+    els.progSelect.value = state.prog;
+    F.KEY_NAMES.forEach(function(n, i){ var o = document.createElement('option'); o.value = i; o.textContent = n; els.keySelect.appendChild(o); });
+    els.keySelect.value = state.key;
+    var so = document.createElement('option'); so.value = 'auto'; so.textContent = 'Как в последовательности'; els.scaleSelect.appendChild(so);
+    Object.keys(F.SCALES).forEach(function(id){ var o = document.createElement('option'); o.value = id; o.textContent = F.SCALES[id].name; els.scaleSelect.appendChild(o); });
+    els.scaleSelect.value = state.scale;
+    els.styleSelect.value = state.style;
+    els.tempoSlider.value = state.tempo; els.tempoValue.textContent = state.tempo + ' уд/мин';
+    els.labelSelect.value = state.labels;
+    els.chordTonesToggle.checked = state.chordTones;
+    els.countInToggle.checked = state.countIn;
+    els.bassToggle.checked = state.bass;
+    state.comp = EarAudio.fillSelect(els.compSelect, state.comp, ['epiano','piano','steel','nylon','organ','strings','synth']);
+    state.phraseInst = EarAudio.fillSelect(els.phraseInstSelect, state.phraseInst, ['nylon','steel','piano','epiano','flute','synth']);
+    els.qaLevel.value = state.qaLevel; els.qaShow.value = state.qaShow; els.limitBars.value = state.limitBars;
+    els.customInput.value = state.custom;
+    els.customRow.hidden = state.prog !== 'custom';
+    els.keySelect.disabled = state.prog === 'custom';
+  })();
+
+  els.progSelect.addEventListener('change', function(){
+    state.prog = els.progSelect.value; state.scale = 'auto'; els.scaleSelect.value = 'auto'; save();
+    els.customRow.hidden = state.prog !== 'custom';
+    els.keySelect.disabled = state.prog === 'custom';
+    rebuild(); restartIfPlaying();
+  });
+  var customTimer = null;
+  els.customInput.addEventListener('input', function(){
+    clearTimeout(customTimer);
+    customTimer = setTimeout(function(){
+      state.custom = els.customInput.value; save();
+      var parsed = parseCustom(state.custom);
+      setStatus(parsed.errors.length ? 'Не понял: ' + parsed.errors.join(', ') : '');
+      rebuild(); restartIfPlaying();
+    }, 500);
+  });
+  els.keySelect.addEventListener('change', function(){ state.key = +els.keySelect.value; save(); rebuild(); restartIfPlaying(); });
+  els.scaleSelect.addEventListener('change', function(){ state.scale = els.scaleSelect.value; save(); rebuild(); });
+  els.styleSelect.addEventListener('change', function(){ state.style = els.styleSelect.value; save(); restartIfPlaying(); });
+  els.tempoSlider.addEventListener('input', function(){ state.tempo = +els.tempoSlider.value; els.tempoValue.textContent = state.tempo + ' уд/мин'; save(); });
+  els.tempoSlider.addEventListener('change', restartIfPlaying);
+  els.posSelect.addEventListener('change', function(){ state.pos = els.posSelect.value; save(); renderBoard(); });
+  els.labelSelect.addEventListener('change', function(){ state.labels = els.labelSelect.value; save(); renderBoard(); });
+  els.chordTonesToggle.addEventListener('change', function(){ state.chordTones = els.chordTonesToggle.checked; save(); renderBoard(); });
+  els.countInToggle.addEventListener('change', function(){ state.countIn = els.countInToggle.checked; save(); });
+  els.bassToggle.addEventListener('change', function(){ state.bass = els.bassToggle.checked; save(); restartIfPlaying(); });
+  els.compSelect.addEventListener('change', function(){ state.comp = els.compSelect.value; save(); EarAudio.load(state.comp); });
+  els.phraseInstSelect.addEventListener('change', function(){ state.phraseInst = els.phraseInstSelect.value; save(); EarAudio.load(state.phraseInst); });
+  els.qaLevel.addEventListener('change', function(){ state.qaLevel = +els.qaLevel.value; save(); });
+  els.qaShow.addEventListener('change', function(){ state.qaShow = els.qaShow.value; save(); });
+  els.limitBars.addEventListener('change', function(){ state.limitBars = +els.limitBars.value; save(); restartIfPlaying(); });
+  tabButtons.forEach(function(b){ b.addEventListener('click', function(){ showTab(b.dataset.tab); }); });
+  els.startBtn.addEventListener('click', start);
+  els.recBtn.addEventListener('click', toggleRec);
+  if(!EarAudio.recordingSupported()) els.recBtn.title = 'Браузер не даёт доступ к микрофону на этой странице';
+
+  document.addEventListener('keydown', function(e){
+    var tag = document.activeElement && document.activeElement.tagName;
+    if(tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    if(e.key === ' '){ e.preventDefault(); start(); }
+  });
+
+  EarAudio.onStatus(setStatus);
+  window.improvDebug = { state:state, P:function(){ return P; }, S:function(){ return S; }, parseCustom:parseCustom, makePhrase:function(i){ return makePhrase(i || 0); }, build:buildTimeline, progs:PROGS };
+
+  rebuild();
+  EarAudio.init([state.comp, 'bass', state.phraseInst]);
+  showTab(state.tab);
+})();
+</script>

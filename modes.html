@@ -1,0 +1,608 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Лады</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="ear-theme.js"></script>
+<link rel="stylesheet" href="ear-common.css">
+<link rel="stylesheet" href="ear-kid.css">
+<style>
+  .page{ max-width:1180px; }
+  .layout{ grid-template-columns:1fr 280px; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; } }
+  .tabs button{ min-width:33%; }
+
+  .bright-scale{ display:flex; gap:.35rem; flex-wrap:wrap; justify-content:center; margin-bottom:.35rem; }
+  .bright-scale button{
+    flex:1 1 90px; max-width:130px; padding:.5rem .4rem; border-radius:10px; cursor:pointer;
+    border:1.5px solid var(--line); background:var(--paper); color:var(--ink); text-align:center;
+    font:600 .88rem var(--font-body);
+  }
+  .bright-scale button small{ display:block; font:500 .7rem var(--font-mono); color:var(--tone-char); margin-top:.1rem; }
+  .bright-scale button.active{ border-color:var(--brass); background:var(--brass-tint); }
+  .bright-axis{ display:flex; justify-content:space-between; font:500 .7rem var(--font-mono); color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:1.25rem; }
+
+  .prompt{ text-align:center; margin-bottom:1rem; }
+  .prompt .big{ font-family:var(--font-display); font-size:clamp(1.5rem, 4vw, 2.1rem); font-weight:600; line-height:1.15; }
+  .prompt .big em{ font-style:normal; color:var(--brass-deep); }
+  .prompt .sub{ color:var(--muted); font-size:.9rem; margin-top:.35rem; line-height:1.45; }
+  .prompt .sub b{ color:var(--tone-char); }
+
+  .degree-strip{ display:grid; grid-template-columns:repeat(7, 1fr); gap:.35rem; max-width:560px; margin:0 auto 1.1rem; }
+  .degree-strip div{
+    text-align:center; padding:.45rem 0 .35rem; border:1.5px solid var(--line); border-radius:10px; background:var(--paper);
+  }
+  .degree-strip b{ display:block; font:600 1.1rem var(--font-display); }
+  .degree-strip span{ display:block; font:500 .68rem var(--font-mono); color:var(--muted); }
+  .degree-strip .char{ border-color:var(--tone-char); }
+  .degree-strip .char b{ color:var(--tone-char); }
+  .degree-strip .changed{ box-shadow:0 0 0 3px var(--brass-tint); }
+
+  .songs{ text-align:center; font-size:.82rem; color:var(--muted); margin:.25rem 0 0; }
+  .vamp-cards{ display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:1rem; }
+  .vamp-cards div{ min-width:80px; padding:.5rem .7rem; text-align:center; border:1.5px solid var(--line); border-radius:10px; background:var(--paper); }
+  .vamp-cards b{ display:block; font:600 1.05rem var(--font-display); }
+  .vamp-cards span{ font:500 .8rem var(--font-mono); color:var(--brass-deep); }
+  .vamp-cards div.active{ border-color:var(--brass); box-shadow:0 0 0 3px var(--brass-tint); }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:.4rem; }
+  .chips label{ flex-direction:row !important; align-items:center; gap:.3rem !important; color:var(--ink) !important; font-size:.8rem !important; cursor:pointer;
+    border:1px solid var(--line); border-radius:999px; padding:.2rem .6rem; background:var(--paper); }
+  .chips input{ accent-color:var(--brass); }
+  .answers{ display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:1rem; }
+  .answers .degree-tile{ max-width:150px; flex-basis:120px; }
+  .answers .degree-tile .roman{ font-size:1rem; }
+  .tempo-row{ display:flex; align-items:center; gap:.6rem; }
+  .tempo-row input{ flex:1; }
+  .tempo-val{ font-family:var(--font-mono); font-size:.85rem; color:var(--brass-deep); min-width:4.5em; text-align:right; }
+  .legend{ display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; font-size:.78rem; color:var(--muted); margin-bottom:.75rem; }
+  .legend i{ display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:.35rem; vertical-align:-1px; }
+  .link-btn{ display:inline-block; text-decoration:none; }
+  .char-note{ max-width:620px; margin:.9rem auto 0; text-align:center; }
+  .char-note b{ color:var(--tone-char); }
+</style>
+
+<div class="page">
+  <nav class="site-nav" aria-label="Тренажёры">
+    <a href="cadence.html">Каданс</a>
+    <a href="solfege.html">Пение с листа</a>
+    <a href="caged.html">CAGED</a>
+    <a href="modes.html" aria-current="page">Лады</a>
+    <a href="improv.html">Импровизация</a>
+  </nav>
+
+  <header class="hero">
+    <h1>Лады</h1>
+    <p class="tagline">Лад слышен, только когда тоника стоит на месте. Поэтому здесь всё звучит над бурдоном — тянущейся тоникой</p>
+  </header>
+
+  <main class="layout">
+    <section class="trainer" aria-label="Тренажёр">
+      <div class="tabs" role="tablist" aria-label="Упражнение">
+        <button type="button" data-tab="compare" role="tab" class="active">Сравнение</button>
+        <button type="button" data-tab="vamp" role="tab">Петли</button>
+        <button type="button" data-tab="quiz" role="tab">Диктант</button>
+      </div>
+
+      <div id="modePicker">
+        <div class="bright-scale" id="brightScale"></div>
+        <div class="bright-axis"><span>← ярче</span><span>темнее →</span></div>
+      </div>
+
+      <!-- Сравнение -->
+      <div class="tab-panel" id="panel-compare">
+        <div class="prompt">
+          <div class="big" id="cmpTitle">—</div>
+          <div class="sub" id="cmpSub"></div>
+        </div>
+        <div class="degree-strip" id="degreeStrip"></div>
+        <div class="stage">
+          <div class="btn-row">
+            <button type="button" class="play-btn" id="cmpScaleBtn">Гамма над бурдоном</button>
+            <button type="button" class="ghost-btn" id="cmpCharBtn">Характерная нота</button>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="ghost-btn" id="cmpMajorBtn">Сравнить с мажором</button>
+            <button type="button" class="ghost-btn" id="cmpMinorBtn">Сравнить с минором</button>
+            <button type="button" class="ghost-btn" id="cmpDroneBtn">Бурдон ♪</button>
+          </div>
+        </div>
+        <p class="songs" id="cmpSongs"></p>
+        <p class="hint char-note">
+          <b>Характерная нота</b> — та ступень, которой лад отличается от обычного мажора или минора. Остальные ступени у них общие,
+          поэтому весь «цвет» лада держится на ней: дорийский — это минор, где вместо ♭6 звучит ♮6. На грифе она залита красным.
+          Если в импровизации её обходить, лад на слух превращается в простой мажор или минор.
+        </p>
+      </div>
+
+      <!-- Петли -->
+      <div class="tab-panel" id="panel-vamp" hidden>
+        <div class="prompt">
+          <div class="big" id="vampTitle">—</div>
+          <div class="sub">Играйте гамму лада поверх петли и почаще задерживайтесь на характерной ноте — она и даёт краску</div>
+        </div>
+        <div class="vamp-cards" id="vampCards"></div>
+        <div class="stage">
+          <div class="btn-row">
+            <button type="button" class="play-btn" id="vampPlayBtn">Играть петлю</button>
+            <a class="ghost-btn link-btn" id="vampImprovLink" href="improv.html">С барабанами в «Импровизации» →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Диктант -->
+      <div class="tab-panel" id="panel-quiz" hidden>
+        <div class="prompt">
+          <div class="big" id="quizTitle">Какой это лад?</div>
+          <div class="sub" id="quizSub">Нажмите «Слушать»</div>
+        </div>
+        <div class="stage">
+          <div class="btn-row">
+            <button type="button" class="play-btn" id="quizPlayBtn">Слушать</button>
+            <button type="button" class="ghost-btn" id="quizCompareBtn" hidden>Мой ответ и правильный</button>
+            <button type="button" class="next-btn" id="quizNextBtn" hidden>Дальше →</button>
+          </div>
+        </div>
+        <div class="feedback" id="quizFeedback"></div>
+        <div class="answers" id="quizAnswers"></div>
+        <p class="hint" style="text-align:center">Счёт: <span id="quizScore">0 из 0</span> · серия <span id="quizStreak">0</span></p>
+      </div>
+
+      <div class="legend">
+        <span><i style="background:var(--tone-r)"></i>тоника</span>
+        <span><i style="background:var(--tone-char)"></i>характерная нота</span>
+        <span><i style="background:var(--tone-3)"></i>звуки текущего аккорда</span>
+      </div>
+      <div class="board-wrap"><svg class="board" id="board" viewBox="0 0 1000 232" role="img" aria-label="Гриф"></svg></div>
+    </section>
+
+    <aside class="settings" aria-label="Настройки">
+      <h2>Настройки</h2>
+      <label for="tonicSelect">Тоника
+        <select id="tonicSelect"></select>
+      </label>
+      <label for="posSelect">На грифе
+        <select id="posSelect"></select>
+      </label>
+      <label for="labelSelect">Подписи
+        <select id="labelSelect">
+          <option value="degree">Ступени (1, ♭3, ♯4…)</option>
+          <option value="note">Ноты</option>
+        </select>
+      </label>
+      <label for="tempoSlider">Темп
+        <span class="tempo-row">
+          <input type="range" id="tempoSlider" min="50" max="160" step="2" value="90">
+          <span class="tempo-val" id="tempoValue">90 уд/мин</span>
+        </span>
+      </label>
+      <label for="instSelect">Инструмент
+        <select id="instSelect"></select>
+      </label>
+      <label class="checkbox"><input type="checkbox" id="droneToggle" checked> Бурдон под гаммами и петлями</label>
+      <div class="status" id="audioStatus" hidden></div>
+
+      <div id="quizSettings">
+        <span style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.4rem">Лады в диктанте</span>
+        <div class="chips" id="quizModes"></div>
+        <label for="quizStim" style="margin-top:.9rem">Что звучит
+          <select id="quizStim">
+            <option value="scale">Гамма над бурдоном</option>
+            <option value="vamp">Характерная петля</option>
+            <option value="melody">Мелодия над бурдоном</option>
+          </select>
+        </label>
+        <label class="checkbox" style="margin-top:.6rem"><input type="checkbox" id="quizRandomTonic" checked> Случайная тоника</label>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+<script src="ear-audio.js"></script>
+<script src="ear-fretboard.js"></script>
+<script>
+(function(){
+  'use strict';
+  var F = EarFret, mod = F.mod, MODES = F.MODES;
+
+  var STORAGE_KEY = 'modes-trainer-v1';
+  var state = { tab:'compare', mode:'dorian', tonic:2, pos:'auto', labels:'degree', tempo:90, inst:'piano', drone:true,
+    quizModes:{ ionian:true, mixolydian:true, dorian:true, aeolian:true }, quizStim:'scale', quizRandom:true,
+    quizCorrect:0, quizTotal:0, quizStreak:0 };
+  var PERSIST = Object.keys(state);
+  try{
+    var saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '{}');
+    PERSIST.forEach(function(k){ if(saved[k] !== undefined) state[k] = saved[k]; });
+  }catch(e){}
+  function save(){
+    try{ var o = {}; PERSIST.forEach(function(k){ o[k] = state[k]; }); window.localStorage.setItem(STORAGE_KEY, JSON.stringify(o)); }catch(e){}
+  }
+
+  var els = {};
+  ['brightScale','modePicker','cmpTitle','cmpSub','degreeStrip','cmpScaleBtn','cmpCharBtn','cmpMajorBtn','cmpMinorBtn','cmpDroneBtn','cmpSongs',
+   'vampTitle','vampCards','vampPlayBtn','vampImprovLink',
+   'quizTitle','quizSub','quizPlayBtn','quizCompareBtn','quizNextBtn','quizFeedback','quizAnswers','quizScore','quizStreak',
+   'board','tonicSelect','posSelect','labelSelect','tempoSlider','tempoValue','instSelect','droneToggle','audioStatus',
+   'quizSettings','quizModes','quizStim','quizRandomTonic'
+  ].forEach(function(id){ els[id] = document.getElementById(id); });
+  var tabButtons = Array.prototype.slice.call(document.querySelectorAll('.tabs button'));
+
+  function M(){ return F.modeById(state.mode); }
+  function flats(){ return F.useFlats(state.tonic, M().steps); }
+  function beat(){ return 60 / state.tempo; }
+  function tonicMidi(pc){ return 52 + mod(pc - 4, 12); }   // E3…D♯4 — удобная середина для гамм
+
+  // ---------- гриф ----------
+  var liveChord = null;   // { rootPc, pcs } — звучащий аккорд петли
+  function zone(){
+    var minor = M().family !== 'major';
+    var list = F.positions(state.tonic, minor);
+    if(state.pos === 'all') return { lo:0, hi:F.MAX_FRET, list:list };
+    var idx = state.pos === 'auto' ? Math.max(0, list.findIndex(function(p){ return p.shape === 'E'; })) : Math.min(+state.pos, list.length - 1);
+    var p = list[idx] || list[0];
+    return { lo:p.lo, hi:p.hi, label:p.label, list:list };
+  }
+  function drawBoard(mode, tonic, opts){
+    opts = opts || {};
+    mode = mode || M(); tonic = tonic === undefined ? state.tonic : tonic;
+    var z = zone();
+    var fl = F.useFlats(tonic, mode.steps);
+    var dots = F.scaleDots(tonic, mode.steps, z.lo, z.hi).map(function(d){
+      var isChar = mode.char.indexOf(d.deg) >= 0 && mode.id !== 'ionian' && mode.id !== 'aeolian' || (mode.char.indexOf(d.deg) >= 0 && opts.showRefChar);
+      var cls = 'scale' + (d.iv === 0 ? ' r' : '') + (isChar ? ' char' : '');
+      var label = state.labels === 'note' ? F.noteName(tonic + d.iv, fl) : F.ivLabel(d.iv, mode.steps);
+      if(liveChord && opts.live){
+        var civ = mod(d.iv + tonic - liveChord.rootPc, 12);
+        if(liveChord.pcs.indexOf(mod(tonic + d.iv, 12)) >= 0){
+          cls = F.chordRole(civ) || 't3';
+          if(isChar) cls += ' char';
+        }
+      }
+      if(opts.hideAll) { cls = 'scale'; label = ''; }
+      return { s:d.s, f:d.f, cls:cls, label:label };
+    });
+    F.draw(els.board, { regions: state.pos === 'all' ? [] : [{ lo:z.lo, hi:z.hi, label:z.label, active:false }], dots: dots });
+  }
+
+  // ---------- звук ----------
+  function droneOn(pc){ if(state.drone) EarAudio.drone([tonicMidi(pc) - 12, tonicMidi(pc) - 5]); }
+  function droneOff(){ EarAudio.drone(null); updateDroneBtn(); }
+  function updateDroneBtn(){ els.cmpDroneBtn.classList.toggle('active', EarAudio.isDroneOn()); }
+
+  function scaleEvents(mode, pc, t0){
+    var ev = [], step = beat() / 1.5, t = tonicMidi(pc);
+    var seq = mode.steps.map(function(iv){ return t + iv; }).concat([t + 12]);
+    seq = seq.concat(seq.slice(0, -1).reverse());
+    seq.forEach(function(m, i){
+      var iv = mod(m - t, 12);
+      var isChar = mode.steps.indexOf(iv) >= 0 && mode.char.indexOf(mode.steps.indexOf(iv)) >= 0;
+      ev.push({ time: t0 + i * step, dur: step * (i === seq.length - 1 ? 3 : 1.1), inst: state.inst, midi:[m], vel: isChar ? .82 : .64, strum:0 });
+    });
+    return { ev: ev, end: t0 + seq.length * step + step * 2 };
+  }
+
+  function playScale(mode, pc){
+    droneOn(pc);
+    var r = scaleEvents(mode, pc, .5);
+    EarAudio.play(r.ev, { onEnd: droneOff, tail: .3 });
+    updateDroneBtn();
+  }
+
+  function playChar(){
+    var mode = M(), pc = state.tonic, t = tonicMidi(pc);
+    droneOn(pc);
+    var ch = F.voiceChord(mod(pc + mode.vamp[0][0], 12), mode.vamp[0][1], 60);
+    var c = mode.char[0], civ = mode.steps[c];
+    var nb = mode.steps[mod(c - 1, 7)] + (c === 0 ? -12 : 0);
+    var ev = [{ time:.3, dur: beat() * 4, inst: state.inst, midi: ch.notes, vel:.45 }];
+    // тоника → соседняя ступень → характерная → тоника; дважды
+    var line = [0, nb, civ, civ, nb, 0];
+    for(var rep = 0; rep < 2; rep++){
+      line.forEach(function(iv, i){
+        ev.push({ time: .3 + beat() * 1.0 + rep * beat() * 7 + i * beat(), dur: beat() * .95, inst: state.inst, midi:[t + 12 + iv], vel: iv === civ ? .85 : .62, strum:0 });
+      });
+    }
+    EarAudio.play(ev, { onEnd: droneOff, tail: .6 });
+    updateDroneBtn();
+  }
+
+  function compareWith(refId){
+    var ref = F.modeById(refId), mode = M(), pc = state.tonic;
+    droneOn(pc);
+    var a = scaleEvents(ref, pc, .5);
+    var b = scaleEvents(mode, pc, a.end + .4);
+    setTimeout(function(){ drawBoard(ref, pc, { showRefChar:false }); els.cmpSub.innerHTML = 'Сейчас: <b>' + ref.name + '</b> — эталон'; }, 0);
+    b.ev[0].onStart = function(){ renderCompare(); };
+    EarAudio.play(a.ev.concat(b.ev), { onEnd: function(){ droneOff(); renderCompare(); }, tail:.3 });
+    updateDroneBtn();
+  }
+
+  // ---------- выбор лада ----------
+  function renderPicker(){
+    els.brightScale.innerHTML = '';
+    MODES.forEach(function(m){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = m.name.replace(/ \(.*\)/, '') + '<small>' + (m.id === 'ionian' || m.id === 'aeolian' ? 'эталон' : m.charLabel) + '</small>';
+      b.classList.toggle('active', m.id === state.mode);
+      b.addEventListener('click', function(){
+        state.mode = m.id; save();
+        EarAudio.stop(); vampStop();
+        renderPicker(); renderCompare(); renderVamp();
+      });
+      els.brightScale.appendChild(b);
+    });
+  }
+
+  function renderCompare(){
+    var mode = M(), idx = MODES.indexOf(mode), fl = flats();
+    var tonicName = F.noteName(state.tonic, fl);
+    els.cmpTitle.innerHTML = '<em>' + tonicName + '</em> ' + mode.name.toLowerCase();
+    var charPc = mod(state.tonic + mode.steps[mode.char[0]], 12);
+    var charText = (mode.id === 'ionian' || mode.id === 'aeolian')
+      ? 'Эталон для сравнения. Соседи отличаются от него одной нотой.'
+      : 'Характерная нота: <b>' + mode.charLabel + '</b> — в этой тональности это <b>' + F.noteName(charPc, fl) + '</b>.';
+    els.cmpSub.innerHTML = mode.relation[0].toUpperCase() + mode.relation.slice(1) + '. ' + charText;
+    var prev = idx > 0 ? MODES[idx - 1] : null;
+    els.degreeStrip.innerHTML = '';
+    mode.steps.forEach(function(iv, d){
+      var div = document.createElement('div');
+      var isChar = mode.char.indexOf(d) >= 0 && mode.id !== 'ionian' && mode.id !== 'aeolian';
+      if(isChar) div.className = 'char';
+      if(prev && prev.steps[d] !== iv) div.className += ' changed';
+      div.innerHTML = '<b>' + F.ivLabel(iv, mode.steps) + '</b><span>' + F.noteName(state.tonic + iv, fl) + '</span>';
+      if(prev && prev.steps[d] !== iv) div.title = 'Отличие от лада «' + prev.name + '»: ступень понижена';
+      els.degreeStrip.appendChild(div);
+    });
+    els.cmpSongs.textContent = 'Где звучит: ' + mode.songs;
+    if(state.tab === 'compare') drawBoard();
+  }
+
+  // ---------- петли ----------
+  var vamp = { playing:false, idx:-1 };
+  function vampChords(){
+    var mode = M(), list = mode.vamp.slice();
+    if(list.length === 3) list.push(list[0]);
+    var prevAvg = 60;
+    return list.map(function(c){
+      var root = mod(state.tonic + c[0], 12);
+      var v = F.voiceChord(root, c[1], prevAvg); prevAvg = v.avg;
+      return { root:root, q:c[1], v:v, name:F.chordName(root, c[1], flats()) };
+    });
+  }
+  function renderVamp(){
+    var mode = M(), chords = vampChords();
+    els.vampTitle.innerHTML = '<em>' + F.noteName(state.tonic, flats()) + '</em> ' + mode.name.toLowerCase() + ' · ' + mode.vampName;
+    els.vampCards.innerHTML = '';
+    chords.forEach(function(c, i){
+      var d = document.createElement('div');
+      d.innerHTML = '<b>' + c.name + '</b><span>' + (i === chords.length - 1 && mode.vamp.length === 3 ? 'снова ' : '') + '</span>';
+      d.classList.toggle('active', i === vamp.idx);
+      els.vampCards.appendChild(d);
+    });
+    var prog = 'vamp-' + mode.id;
+    els.vampImprovLink.href = 'improv.html?key=' + state.tonic + '&prog=' + prog;
+    if(state.tab === 'vamp') drawBoard(null, undefined, { live:true });
+  }
+  function vampPlay(){
+    if(vamp.playing){ vampStop(); return; }
+    vamp.playing = true;
+    els.vampPlayBtn.textContent = 'Стоп';
+    droneOn(state.tonic);
+    var chords = vampChords(), b = beat(), bar = b * 4, reps = 4, ev = [];
+    for(var r = 0; r < reps; r++){
+      chords.forEach(function(c, i){
+        var t = (r * chords.length + i) * bar;
+        ev.push({ time:t, dur:.01, midi:[], onStart:function(){
+          vamp.idx = i; liveChord = { rootPc:c.root, pcs:c.v.pcs };
+          Array.prototype.forEach.call(els.vampCards.children, function(x, j){ x.classList.toggle('active', j === i); });
+          drawBoard(null, undefined, { live:true });
+        }});
+        ev.push({ time:t, dur:b * 1.9, inst:state.inst, midi:c.v.notes, vel:.5 });
+        ev.push({ time:t + b * 2, dur:b * 1.9, inst:state.inst, midi:c.v.notes, vel:.4 });
+        ev.push({ time:t, dur:b * 1.8, inst:'bass', midi:[c.v.bass], vel:.75 });
+        ev.push({ time:t + b * 2, dur:b * .9, inst:'bass', midi:[c.v.bass + 7 > 43 ? c.v.bass - 5 : c.v.bass + 7], vel:.6 });
+        ev.push({ time:t + b * 3, dur:b * .9, inst:'bass', midi:[c.v.bass], vel:.6 });
+      });
+    }
+    var total = reps * chords.length * bar;
+    EarAudio.play(ev, { tail: total - ((reps * chords.length - 1) * bar + b * 3.9), onEnd:function(){
+      if(vamp.playing){ vamp.playing = false; vampPlay(); }
+    }});
+    updateDroneBtn();
+  }
+  function vampStop(){
+    vamp.playing = false; vamp.idx = -1; liveChord = null;
+    els.vampPlayBtn.textContent = 'Играть петлю';
+    EarAudio.stop(); droneOff();
+    Array.prototype.forEach.call(els.vampCards.children, function(x){ x.classList.remove('active'); });
+    if(state.tab === 'vamp') drawBoard(null, undefined, { live:true });
+  }
+
+  // ---------- диктант ----------
+  var quiz = { mode:null, tonic:0, answered:false, given:null };
+  function quizPool(){
+    var ids = MODES.map(function(m){ return m.id; }).filter(function(id){ return state.quizModes[id]; });
+    return ids.length >= 2 ? ids : ['ionian','aeolian'];
+  }
+  function renderQuizAnswers(){
+    els.quizAnswers.innerHTML = '';
+    quizPool().forEach(function(id){
+      var m = F.modeById(id);
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'degree-tile'; b.dataset.id = id;
+      b.innerHTML = '<span class="roman">' + m.name.replace(/ \(.*\)/, '') + '</span><span class="chordname">' + (id === 'ionian' ? 'мажор' : id === 'aeolian' ? 'минор' : m.charLabel) + '</span>';
+      b.disabled = !quiz.mode || quiz.answered;
+      b.addEventListener('click', function(){ quizAnswer(id, b); });
+      els.quizAnswers.appendChild(b);
+    });
+  }
+  function quizNew(){
+    var pool = quizPool(), id;
+    do { id = pool[Math.floor(Math.random() * pool.length)]; } while(pool.length > 1 && quiz.mode && id === quiz.mode.id && Math.random() < .7);
+    quiz.mode = F.modeById(id);
+    quiz.tonic = state.quizRandom ? Math.floor(Math.random() * 12) : state.tonic;
+    quiz.answered = false; quiz.given = null;
+    els.quizTitle.textContent = 'Какой это лад?';
+    els.quizSub.textContent = 'Тоника — ' + F.RU[quiz.tonic].toLowerCase() + '. Слушайте, какая ступень «окрашивает» звук';
+    setFeedback('', '');
+    els.quizNextBtn.hidden = true; els.quizCompareBtn.hidden = true;
+    renderQuizAnswers();
+    drawBoard(quiz.mode, quiz.tonic, { hideAll:true });
+    quizPlay();
+  }
+  function quizStimulus(mode, pc, t0){
+    var t = tonicMidi(pc), b = beat();
+    if(state.quizStim === 'scale') return scaleEvents(mode, pc, t0);
+    if(state.quizStim === 'vamp'){
+      var list = mode.vamp.slice(); if(list.length === 3) list.push(list[0]);
+      var ev = [], prevAvg = 60, n = 0;
+      for(var r = 0; r < 2; r++) list.forEach(function(c){
+        var v = F.voiceChord(mod(pc + c[0], 12), c[1], prevAvg); prevAvg = v.avg;
+        var tt = t0 + n * b * 4; n++;
+        ev.push({ time:tt, dur:b * 3.8, inst:state.inst, midi:v.notes, vel:.5 });
+        ev.push({ time:tt, dur:b * 3.8, inst:'bass', midi:[v.bass], vel:.7 });
+      });
+      return { ev:ev, end:t0 + n * b * 4 + .5 };
+    }
+    // мелодия: поступенно, характерная ступень звучит минимум дважды, начало и конец — тоника
+    var steps = mode.steps, c = mode.char[0];
+    var degs = [0], cur = 0, need = 2;
+    for(var i = 0; i < 10; i++){
+      var target = need > 0 && Math.random() < .5 ? c : cur + (Math.random() < .5 ? 1 : -1);
+      var next = cur + Math.max(-2, Math.min(2, target - cur));
+      next = Math.max(-2, Math.min(8, next));
+      if(mod(next, 7) === c) need--;
+      degs.push(next); cur = next;
+    }
+    while(cur !== 0 && cur !== 7){ cur += cur > 3 ? (cur < 7 ? 1 : -1) : -1 * Math.sign(cur); degs.push(cur); }
+    var ev2 = [];
+    degs.forEach(function(d, k){
+      var m = t + 12 + 12 * Math.floor(d / 7) + steps[mod(d, 7)];
+      ev2.push({ time:t0 + k * b * .75, dur:b * .7, inst:state.inst, midi:[m], vel:.7, strum:0 });
+    });
+    return { ev:ev2, end:t0 + degs.length * b * .75 + .6 };
+  }
+  function quizPlay(){
+    if(!quiz.mode){ quizNew(); return; }
+    droneOn(quiz.tonic);
+    var r = quizStimulus(quiz.mode, quiz.tonic, .6);
+    EarAudio.play(r.ev, { onEnd: droneOff, tail:.3 });
+  }
+  function quizAnswer(id, btn){
+    if(quiz.answered) return;
+    quiz.answered = true; quiz.given = id;
+    state.quizTotal++;
+    var ok = id === quiz.mode.id;
+    if(ok){ state.quizCorrect++; state.quizStreak++; btn.classList.add('is-correct'); setFeedback('Верно — ' + quiz.mode.name.toLowerCase(), 'good'); }
+    else {
+      state.quizStreak = 0; btn.classList.add('is-wrong');
+      var right = els.quizAnswers.querySelector('[data-id="' + quiz.mode.id + '"]'); if(right) right.classList.add('is-correct');
+      setFeedback('Это ' + quiz.mode.name.toLowerCase() + (quiz.mode.char.length ? ' — слушайте ' + quiz.mode.charLabel : ''), 'bad');
+      els.quizCompareBtn.hidden = false;
+    }
+    Array.prototype.forEach.call(els.quizAnswers.children, function(b){ b.disabled = true; });
+    els.quizNextBtn.hidden = false;
+    els.quizTitle.textContent = F.noteName(quiz.tonic, F.useFlats(quiz.tonic, quiz.mode.steps)) + ' ' + quiz.mode.name.toLowerCase();
+    save(); updateScore();
+    drawBoard(quiz.mode, quiz.tonic);
+  }
+  function quizCompare(){
+    if(!quiz.given) return;
+    droneOn(quiz.tonic);
+    var a = scaleEvents(F.modeById(quiz.given), quiz.tonic, .5);
+    var b = scaleEvents(quiz.mode, quiz.tonic, a.end + .5);
+    setFeedback('Сначала ваш ответ (' + F.modeById(quiz.given).name.toLowerCase() + '), потом правильный', '');
+    EarAudio.play(a.ev.concat(b.ev), { onEnd: droneOff, tail:.3 });
+  }
+  function setFeedback(text, cls){ els.quizFeedback.textContent = text; els.quizFeedback.className = 'feedback' + (cls ? ' ' + cls : ''); }
+  function updateScore(){
+    els.quizScore.textContent = state.quizCorrect + ' из ' + state.quizTotal;
+    els.quizStreak.textContent = state.quizStreak;
+  }
+
+  // ---------- вкладки и настройки ----------
+  function showTab(tab){
+    state.tab = tab; save();
+    EarAudio.stop(); vampStop(); droneOff();
+    tabButtons.forEach(function(b){ var on = b.dataset.tab === tab; b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    ['compare','vamp','quiz'].forEach(function(t){ document.getElementById('panel-' + t).hidden = t !== tab; });
+    els.modePicker.hidden = tab === 'quiz';
+    els.quizSettings.hidden = tab !== 'quiz';
+    if(tab === 'compare') renderCompare();
+    else if(tab === 'vamp') renderVamp();
+    else { renderQuizAnswers(); if(quiz.mode) drawBoard(quiz.mode, quiz.tonic, { hideAll:!quiz.answered }); else F.draw(els.board, {}); }
+  }
+  tabButtons.forEach(function(b){ b.addEventListener('click', function(){ showTab(b.dataset.tab); }); });
+
+  function fillPositions(){
+    var list = F.positions(state.tonic, M().family !== 'major');
+    els.posSelect.innerHTML = '<option value="auto">Позиция формы E</option><option value="all">Весь гриф</option>';
+    list.forEach(function(p, i){ var o = document.createElement('option'); o.value = i; o.textContent = p.label[0].toUpperCase() + p.label.slice(1); els.posSelect.appendChild(o); });
+    els.posSelect.value = state.pos;
+    if(els.posSelect.value !== String(state.pos)){ state.pos = 'auto'; els.posSelect.value = 'auto'; }
+  }
+
+  F.KEY_NAMES.forEach(function(n, i){ var o = document.createElement('option'); o.value = i; o.textContent = n; els.tonicSelect.appendChild(o); });
+  els.tonicSelect.value = state.tonic;
+  els.tonicSelect.addEventListener('change', function(){ state.tonic = +els.tonicSelect.value; save(); fillPositions(); EarAudio.stop(); vampStop(); renderCompare(); renderVamp(); });
+  els.posSelect.addEventListener('change', function(){ state.pos = els.posSelect.value; save(); showTab(state.tab); });
+  els.labelSelect.value = state.labels;
+  els.labelSelect.addEventListener('change', function(){ state.labels = els.labelSelect.value; save(); showTab(state.tab); });
+  els.tempoSlider.value = state.tempo; els.tempoValue.textContent = state.tempo + ' уд/мин';
+  els.tempoSlider.addEventListener('input', function(){ state.tempo = +els.tempoSlider.value; els.tempoValue.textContent = state.tempo + ' уд/мин'; save(); });
+  state.inst = EarAudio.fillSelect(els.instSelect, state.inst, ['piano','epiano','nylon','steel','strings','organ','flute','synth']);
+  els.instSelect.addEventListener('change', function(){ state.inst = els.instSelect.value; save(); EarAudio.load(state.inst); });
+  els.droneToggle.checked = state.drone;
+  els.droneToggle.addEventListener('change', function(){ state.drone = els.droneToggle.checked; save(); if(!state.drone) droneOff(); });
+  MODES.forEach(function(m){
+    var lab = document.createElement('label');
+    lab.innerHTML = '<input type="checkbox"> ' + m.name.replace(/ \(.*\)/, '');
+    var inp = lab.firstChild; inp.checked = !!state.quizModes[m.id];
+    inp.addEventListener('change', function(){ state.quizModes[m.id] = inp.checked; save(); quiz.mode = null; renderQuizAnswers(); els.quizSub.textContent = 'Нажмите «Слушать»'; });
+    els.quizModes.appendChild(lab);
+  });
+  els.quizStim.value = state.quizStim;
+  els.quizStim.addEventListener('change', function(){ state.quizStim = els.quizStim.value; save(); });
+  els.quizRandomTonic.checked = state.quizRandom;
+  els.quizRandomTonic.addEventListener('change', function(){ state.quizRandom = els.quizRandomTonic.checked; save(); });
+
+  els.cmpScaleBtn.addEventListener('click', function(){ playScale(M(), state.tonic); });
+  els.cmpCharBtn.addEventListener('click', playChar);
+  els.cmpMajorBtn.addEventListener('click', function(){ compareWith('ionian'); });
+  els.cmpMinorBtn.addEventListener('click', function(){ compareWith('aeolian'); });
+  els.cmpDroneBtn.addEventListener('click', function(){
+    if(EarAudio.isDroneOn()) droneOff(); else { EarAudio.drone([tonicMidi(state.tonic) - 12, tonicMidi(state.tonic) - 5]); updateDroneBtn(); }
+  });
+  els.vampPlayBtn.addEventListener('click', vampPlay);
+  els.quizPlayBtn.addEventListener('click', quizPlay);
+  els.quizNextBtn.addEventListener('click', quizNew);
+  els.quizCompareBtn.addEventListener('click', quizCompare);
+
+  document.addEventListener('keydown', function(e){
+    var tag = document.activeElement && document.activeElement.tagName;
+    if(tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    if(e.key === ' '){
+      e.preventDefault();
+      if(state.tab === 'compare') playScale(M(), state.tonic);
+      else if(state.tab === 'vamp') vampPlay();
+      else quizPlay();
+    } else if(state.tab === 'quiz' && (e.key === 'Enter' || /^[nNтТ]$/.test(e.key)) && quiz.answered){ quizNew(); }
+    else if(state.tab !== 'quiz' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')){
+      var i = MODES.indexOf(M()) + (e.key === 'ArrowLeft' ? -1 : 1);
+      if(i >= 0 && i < MODES.length) els.brightScale.children[i].click();
+    }
+  });
+
+  EarAudio.onStatus(function(text){ els.audioStatus.textContent = text; els.audioStatus.hidden = !text; });
+  window.modesDebug = { state: state, quiz: quiz, stim: quizStimulus };
+
+  fillPositions();
+  EarAudio.init([state.inst, 'bass']);
+  updateScore();
+  renderPicker();
+  renderVamp();
+  showTab(state.tab);
+})();
+</script>

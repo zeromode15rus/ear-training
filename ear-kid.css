@@ -1,0 +1,166 @@
+/* Детская тема: data-theme="kid".
+   Подключается после ear-common.css — переопределяет токены и увеличивает всё,
+   по чему надо попадать пальцем. Тёмного варианта у неё нет: она всегда светлая. */
+
+:root[data-theme="kid"]{
+  color-scheme:light;
+
+  --ink:#232946;
+  --paper:#eef4ff;
+  --paper-raised:#ffffff;
+  --line:#b9cdf5;
+  --muted:#5d6f96;
+
+  --brass:#ff7a3d;
+  --brass-deep:#c33f06;
+  --brass-tint:#ffe2d0;
+  --on-brass:#ffffff;
+
+  --good:#0f9d63;
+  --good-bg:#d4f7e8;
+  --bad:#e11d48;
+  --bad-bg:#ffe0e7;
+
+  --shadow:0 2px 0 rgba(35,41,70,.10), 0 10px 22px rgba(61,110,255,.13);
+
+  --tone-r:#ff6a2b; --tone-3:#0f9d63; --tone-5:#2f7cf6; --tone-7:#9333ea;
+  --tone-char:#e5177b; --tone-x:#8296bb;
+
+  --wood:#ffe3b8; --fret:#c99b5c; --string:#7a6039; --inlay:#ffd08a; --dot-text:#ffffff;
+
+  /* Шрифты подгружает ear-theme.js при первом включении темы. */
+  --font-display:'Comfortaa', 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  --font-body:'Nunito', 'Segoe UI', system-ui, sans-serif;
+
+  --kid-r:20px;
+}
+
+/* ---------- фон в лапках ---------- */
+
+:root[data-theme="kid"] body{
+  background-color:var(--paper);
+  background-image:url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'>\
+<g fill='%232f7cf6' fill-opacity='0.055'>\
+<g transform='translate(30 34) rotate(-18)'>\
+<ellipse cx='0' cy='10' rx='11' ry='9'/><circle cx='-11' cy='-5' r='4.2'/>\
+<circle cx='-4' cy='-10' r='4.6'/><circle cx='4' cy='-10' r='4.6'/><circle cx='11' cy='-5' r='4.2'/>\
+</g>\
+<g transform='translate(122 104) rotate(14)'>\
+<ellipse cx='0' cy='10' rx='11' ry='9'/><circle cx='-11' cy='-5' r='4.2'/>\
+<circle cx='-4' cy='-10' r='4.6'/><circle cx='4' cy='-10' r='4.6'/><circle cx='11' cy='-5' r='4.2'/>\
+</g>\
+</g></svg>");
+  background-attachment:fixed;
+}
+
+/* ---------- крупнее и круглее ---------- */
+
+:root[data-theme="kid"] .hero h1{ font-weight:700; letter-spacing:-.01em; }
+:root[data-theme="kid"] .tagline{ font-size:1.02rem; }
+
+:root[data-theme="kid"] .trainer,
+:root[data-theme="kid"] .settings,
+:root[data-theme="kid"] .theory{
+  border-width:2px;
+  border-radius:calc(var(--kid-r) + 6px);
+}
+
+:root[data-theme="kid"] .site-nav a,
+:root[data-theme="kid"] .theme-btn{
+  font-size:.92rem;
+  font-weight:700;
+  border-width:2px;
+  padding:.45rem 1rem;
+}
+:root[data-theme="kid"] .theme-btn{ border-style:solid; }
+:root[data-theme="kid"] .theme-btn svg{ width:1em; height:1em; vertical-align:-.12em; margin-right:.3em; fill:currentColor; }
+
+:root[data-theme="kid"] .tabs,
+:root[data-theme="kid"] .mode-toggle{ border-width:2px; }
+:root[data-theme="kid"] .tabs button,
+:root[data-theme="kid"] .mode-toggle button{ font-size:1rem; font-weight:700; padding-block:.8rem; }
+
+:root[data-theme="kid"] .play-btn{
+  font-size:1.2rem;
+  font-weight:700;
+  padding:1.05rem 2.2rem;
+  border:3px solid var(--brass-deep);
+}
+:root[data-theme="kid"] .play-btn svg{ width:20px; height:20px; }
+
+:root[data-theme="kid"] .ghost-btn,
+:root[data-theme="kid"] .next-btn{
+  font-size:.98rem;
+  font-weight:700;
+  border-width:2px;
+  padding:.62rem 1.3rem;
+}
+
+:root[data-theme="kid"] .degree-tile,
+:root[data-theme="kid"] .slot{
+  border-width:2.5px;
+  border-radius:var(--kid-r);
+  padding:1rem .6rem .8rem;
+}
+:root[data-theme="kid"] .degree-tile{ max-width:104px; flex-basis:78px; }
+:root[data-theme="kid"] .degree-tile .roman{ font-size:1.55rem; font-weight:700; line-height:1.05; text-align:center; }
+:root[data-theme="kid"] .degree-tile .chordname{ font-size:.78rem; font-weight:700; font-family:var(--font-body); }
+:root[data-theme="kid"] .degrees.sevenths .degree-tile{ max-width:130px; flex-basis:100px; }
+:root[data-theme="kid"] .degrees.sevenths .roman{ font-size:1.25rem; }
+
+:root[data-theme="kid"] .degree-tile:hover:not(:disabled){ transform:translateY(-3px) rotate(-1.5deg); }
+:root[data-theme="kid"] .degree-tile.is-correct{ border-width:3px; }
+
+:root[data-theme="kid"] .stat,
+:root[data-theme="kid"] .score,
+:root[data-theme="kid"] .coach,
+:root[data-theme="kid"] .feedback{ border-radius:var(--kid-r); }
+:root[data-theme="kid"] .stat{ border-width:2px; }
+:root[data-theme="kid"] .stat-value{ font-size:1.5rem; font-weight:700; }
+
+:root[data-theme="kid"] .feedback{ font-size:1.08rem; font-weight:700; min-height:2.8rem; }
+:root[data-theme="kid"] .settings label{ font-size:.92rem; }
+:root[data-theme="kid"] select{ border-width:2px; border-radius:12px; padding:.55rem .6rem; font-size:1rem; }
+:root[data-theme="kid"] .checkbox input{ width:20px; height:20px; }
+:root[data-theme="kid"] .kbd{ border-width:2px; border-radius:6px; }
+
+/* Похвала заметнее: маленький подскок вместо ровного фона. */
+@media (prefers-reduced-motion: no-preference){
+  :root[data-theme="kid"] .degree-tile.is-correct{ animation:kid-hop .38s ease; }
+  @keyframes kid-hop{
+    0%,100%{ transform:translateY(0) scale(1); }
+    40%{ transform:translateY(-7px) scale(1.06); }
+  }
+}
+
+/* ---------- три кота ---------- */
+
+.kid-cats{ display:none; }
+
+:root[data-theme="kid"] .kid-cats{
+  display:block;
+  width:min(340px, 74%);
+  margin:.4rem auto 1.6rem;
+  pointer-events:none;
+}
+:root[data-theme="kid"] .kid-cats svg{ display:block; width:100%; height:auto; overflow:visible; }
+
+.kid-cats .fur-a{ fill:#f59331; }
+.kid-cats .fur-a-dark{ fill:#d9721a; }
+.kid-cats .fur-b{ fill:#93a6c2; }
+.kid-cats .fur-b-dark{ fill:#7186a6; }
+.kid-cats .fur-c{ fill:#3c4152; }
+.kid-cats .fur-c-dark{ fill:#2b2f3d; }
+.kid-cats .bib{ fill:#fffdf8; }
+.kid-cats .ear-in{ fill:#ffc2cf; }
+.kid-cats .face{ fill:#232946; }
+.kid-cats .nose{ fill:#ff8fa8; }
+.kid-cats .whisker{ stroke:#232946; stroke-width:1.6; stroke-linecap:round; opacity:.55; fill:none; }
+.kid-cats .ground{ stroke:var(--line); stroke-width:2.5; stroke-linecap:round; }
+
+/* Хвост первого кота качается — по одному коту, чтобы не рябило. */
+@media (prefers-reduced-motion: no-preference){
+  .kid-cats .tail-wag{ transform-box:fill-box; transform-origin:20% 90%; animation:kid-tail 2.6s ease-in-out infinite; }
+  @keyframes kid-tail{ 50%{ transform:rotate(-9deg); } }
+}

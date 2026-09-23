@@ -1,0 +1,544 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ступени и аккорды</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f5f2ea;
+  --surface:#ffffff;
+  --surface-2:#eef0e6;
+  --border:#dadfd2;
+  --text:#1a231d;
+  --text-dim:#5c6b60;
+  --accent:#b8681a;
+  --accent-soft:#f1e0c8;
+  --good:#0e8a71;
+  --good-soft:#dcf3ec;
+  --bad:#c1402f;
+  --bad-soft:#f8e2de;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1310; --surface:#151d19; --surface-2:#1b241f; --border:#2a332c;
+    --text:#e8ede8; --text-dim:#8fa197; --accent:#ffb454; --accent-soft:#3a2c14;
+    --good:#5ee6c5; --good-soft:#123c33; --bad:#ff7a6b; --bad-soft:#3d1f1a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1310; --surface:#151d19; --surface-2:#1b241f; --border:#2a332c;
+  --text:#e8ede8; --text-dim:#8fa197; --accent:#ffb454; --accent-soft:#3a2c14;
+  --good:#5ee6c5; --good-soft:#123c33; --bad:#ff7a6b; --bad-soft:#3d1f1a;
+}
+
+*{box-sizing:border-box;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  padding:28px 16px 56px; display:flex; justify-content:center;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;}
+.wrap{width:100%;max-width:760px;display:flex;flex-direction:column;gap:22px;}
+
+header{display:flex;flex-direction:column;gap:6px;}
+h1{margin:0;font-size:clamp(24px,5vw,32px);font-weight:600;letter-spacing:-0.01em;text-wrap:balance;}
+.sub{color:var(--text-dim);font-size:14px;max-width:56ch;line-height:1.5;}
+
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+.panel-title{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin:0 0 4px;}
+.panel-hint{font-size:12px;color:var(--text-dim);margin:0 0 14px;line-height:1.5;}
+
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.row + .row{margin-top:12px;}
+
+label.field{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;}
+select{
+  font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text);
+  background:var(--surface-2);border:1px solid var(--border);border-radius:8px;
+  padding:8px 10px;
+}
+.chk{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dim);cursor:pointer;user-select:none;}
+.chk input{accent-color:var(--accent);}
+
+button{
+  font-family:inherit;font-size:13px;font-weight:600;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text);border-radius:8px;padding:9px 14px;cursor:pointer;
+  transition:background .15s, transform .05s;
+}
+button:hover{background:var(--accent-soft);}
+button:active{transform:scale(.97);}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+button.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+button.primary:hover{filter:brightness(1.05);}
+button.toggled{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+button:disabled{opacity:.5;cursor:not-allowed;}
+
+.mode-switch{display:flex;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:3px;}
+.mode-switch button{background:transparent;border:none;padding:7px 12px;border-radius:6px;}
+.mode-switch button.active{background:var(--accent);color:var(--bg);}
+
+.score{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text-dim);display:flex;gap:14px;margin-left:auto;}
+.score b{color:var(--text);font-weight:600;}
+
+.options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
+@media (max-width:480px){.options{grid-template-columns:1fr;}}
+.opt{
+  font-family:"IBM Plex Mono",monospace;font-size:14px;text-align:left;padding:12px 14px;
+  border-radius:9px;border:1px solid var(--border);background:var(--surface-2);
+}
+.opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--good);}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad);}
+
+.feedback{margin-top:12px;font-size:13px;color:var(--text-dim);min-height:18px;}
+.feedback.good{color:var(--good);}
+.feedback.bad{color:var(--bad);}
+
+.target-row{display:flex;align-items:center;gap:18px;margin:18px 0 14px;flex-wrap:wrap;}
+.target-note{
+  font-family:"IBM Plex Mono",monospace;font-size:34px;font-weight:600;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 22px;min-width:170px;text-align:center;line-height:1.15;
+}
+.target-note small{display:block;font-size:12px;font-weight:500;color:var(--text-dim);margin-top:2px;letter-spacing:.04em;}
+.mic-status{font-size:12px;color:var(--text-dim);max-width:220px;line-height:1.4;}
+
+.meter-wrap{margin-top:4px;}
+.meter{position:relative;height:54px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.meter .zero-line{position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--border);transform:translateX(-1px);}
+.meter .band{position:absolute;left:50%;top:0;bottom:0;width:16%;transform:translateX(-50%);background:var(--good-soft);}
+.meter .needle{position:absolute;top:6px;bottom:6px;width:4px;border-radius:2px;background:var(--text-dim);left:50%;transform:translateX(-50%);transition:left .06s linear, background .1s linear;opacity:0;}
+.meter .needle.show{opacity:1;}
+.meter .needle.good{background:var(--good);}
+.meter .needle.bad{background:var(--bad);}
+.meter-scale{display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--text-dim);margin-top:4px;}
+.detected{margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text-dim);}
+.detected b{color:var(--text);}
+
+.reveal-note{margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text-dim);}
+.reveal-note b{color:var(--accent);}
+
+footer{color:var(--text-dim);font-size:12px;text-align:center;line-height:1.6;}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Ступени и аккорды</h1>
+    <p class="sub">Два упражнения на слух: узнавание последовательностей аккордов и пение тонов внутри аккорда / ступеней лада. Всё — синтезированный звук, без записей чужих песен.</p>
+  </header>
+
+  <!-- MODULE 1: progression ID -->
+  <section class="panel">
+    <p class="panel-title">Аккордовые последовательности</p>
+    <p class="panel-hint">Нажми «Играть» — прозвучит последовательность трезвучий в выбранной тональности. Определи её на слух и выбери вариант из четырёх.</p>
+
+    <div class="row">
+      <label class="field">Тональность
+        <select id="progKey"></select>
+      </label>
+      <button id="progPlay" class="primary">▶ Играть</button>
+      <button id="progReplay">⟲ Повтор</button>
+      <div class="score">
+        <span>верно: <b id="progGood">0</b></span>
+        <span>всего: <b id="progTotal">0</b></span>
+      </div>
+    </div>
+
+    <div class="options" id="progOptions"></div>
+    <div class="feedback" id="progFeedback"></div>
+  </section>
+
+  <!-- MODULE 2: chord tones / scale degrees -->
+  <section class="panel">
+    <div class="row">
+      <p class="panel-title" style="margin:0;">Ступени и тоны аккорда</p>
+      <div class="score">
+        <span>верно: <b id="singGood">0</b></span>
+        <span>всего: <b id="singTotal">0</b></span>
+      </div>
+    </div>
+    <p class="panel-hint">Слушай контекст (аккорд или тонику), затем пой указанный тон — на слух, с гитарой или с микрофоном.</p>
+
+    <div class="row">
+      <div class="mode-switch">
+        <button id="modeChord" class="active">Тон в аккорде</button>
+        <button id="modeDegree">Ступень лада</button>
+      </div>
+      <label class="field">Тональность
+        <select id="singKey"></select>
+      </label>
+      <label class="chk" id="seventhWrap">
+        <input type="checkbox" id="seventhChk"> septаккорды
+      </label>
+    </div>
+
+    <div class="row" style="margin-top:14px;">
+      <button id="ctxPlay" class="primary">▶ Контекст</button>
+      <button id="nextTarget">Следующая →</button>
+    </div>
+
+    <div class="target-row">
+      <div class="target-note mono" id="targetLabel">—<small id="targetSub">&nbsp;</small></div>
+      <button id="playTargetBtn">🔊 Дать ноту</button>
+      <div class="mic-status" id="micStatus">Необязательно: нажми «Слушать» и разреши микрофон, чтобы получать оценку попадания в ноту.</div>
+    </div>
+
+    <div class="meter-wrap">
+      <div class="meter">
+        <div class="zero-line"></div>
+        <div class="band"></div>
+        <div class="needle" id="needle"></div>
+      </div>
+      <div class="meter-scale"><span>−50¢ ниже</span><span>в тон</span><span>+50¢ выше</span></div>
+    </div>
+
+    <div class="detected" id="detected">Микрофон выключен.</div>
+
+    <div class="row" style="margin-top:14px;">
+      <button id="micBtn">🎙 Слушать</button>
+    </div>
+  </section>
+
+  <footer>Все аккорды и ноты сгенерированы по теории (диатоника мажора), звук — синтезированный тон.</footer>
+</div>
+
+<script>
+// ---------- shared audio engine ----------
+let audioCtx = null;
+function ensureCtx(){
+  if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function freqFromMidi(m){ return 440 * Math.pow(2, (m-69)/12); }
+function midiFromFreq(f){ return 69 + 12*Math.log2(f/440); }
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function nameFromMidiRound(m){
+  const r = Math.round(m);
+  const oct = Math.floor(r/12)-1;
+  return NOTE_NAMES[((r%12)+12)%12] + oct;
+}
+function nameFromMidiExact(m){
+  const oct = Math.floor(m/12)-1;
+  return NOTE_NAMES[((m%12)+12)%12] + oct;
+}
+
+function tone(freq, startTime, dur, vel=0.22, type='triangle'){
+  const c = ensureCtx();
+  const osc = c.createOscillator();
+  const gain = c.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  osc.connect(gain); gain.connect(c.destination);
+  const a = 0.015, r = 0.08;
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(vel, startTime+a);
+  gain.gain.setValueAtTime(vel, Math.max(startTime+a, startTime+dur-r));
+  gain.gain.linearRampToValueAtTime(0, startTime+dur);
+  osc.start(startTime);
+  osc.stop(startTime+dur+0.02);
+}
+function chordTone(midis, startTime, dur, vel=0.14){
+  midis.forEach(m => tone(freqFromMidi(m), startTime, dur, vel, 'sine'));
+}
+
+// ---------- music theory ----------
+const KEYS = [
+  {pc:4, name:'E — ми'},
+  {pc:9, name:'A — ля'},
+  {pc:2, name:'D — ре'},
+  {pc:7, name:'G — соль'},
+  {pc:0, name:'C — до'},
+  {pc:11,name:'B — си'},
+  {pc:5, name:'F — фа'},
+  {pc:10,name:'B♭ — си-бемоль'},
+];
+const SCALE = [0,2,4,5,7,9,11];
+const TRIAD_Q = ['maj','min','min','maj','maj','min','dim'];
+const SEV_Q   = ['maj7','min7','min7','maj7','dom7','min7','m7b5'];
+const TRIAD_LABEL = ['I','ii','iii','IV','V','vi','vii°'];
+const SEV_LABEL   = ['Imaj7','ii7','iii7','IVmaj7','V7','vi7','viiø7'];
+const INTERVALS = {
+  maj:[0,4,7], min:[0,3,7], dim:[0,3,6],
+  maj7:[0,4,7,11], min7:[0,3,7,10], dom7:[0,4,7,10], m7b5:[0,3,6,10]
+};
+const TONE_LABEL = ['Прима','Терция','Квинта','Септима'];
+
+function romanLabel(degree, seventh){ return (seventh?SEV_LABEL:TRIAD_LABEL)[degree]; }
+
+function chordMidis(keyPc, degree, seventh, baseOct=60){
+  const quality = (seventh?SEV_Q:TRIAD_Q)[degree];
+  let root = ((keyPc + SCALE[degree]) % 12);
+  let rootMidi = baseOct + root;
+  while (rootMidi < baseOct-5) rootMidi += 12;
+  while (rootMidi > baseOct+7) rootMidi -= 12;
+  return INTERVALS[quality].map(iv => rootMidi + iv);
+}
+
+function fillKeySelect(sel){
+  KEYS.forEach((k,i)=>{
+    const o = document.createElement('option');
+    o.value = i; o.textContent = k.name;
+    sel.appendChild(o);
+  });
+}
+fillKeySelect(document.getElementById('progKey'));
+fillKeySelect(document.getElementById('singKey'));
+
+// ---------- module 1: progression identification ----------
+const PROGRESSIONS = [
+  [0,4,5,3],
+  [0,5,3,4],
+  [5,3,0,4],
+  [1,4,0],
+  [0,3,4,3],
+  [0,4,5,2,3,0,3,4],
+  [0,5,1,4],
+  [2,5,1,4,0],
+  [0,3,0,4],
+  [3,4,0,0],
+];
+
+let progRound = null;
+
+function pickDistractors(correctIdx, n){
+  const pool = PROGRESSIONS.map((p,i)=>i).filter(i=>i!==correctIdx);
+  const sameLen = pool.filter(i=>PROGRESSIONS[i].length===PROGRESSIONS[correctIdx].length);
+  const rest = pool.filter(i=>!sameLen.includes(i));
+  const ordered = [...sameLen.sort(()=>Math.random()-0.5), ...rest.sort(()=>Math.random()-0.5)];
+  return ordered.slice(0,n);
+}
+
+function newProgressionRound(){
+  const keyIdx = parseInt(document.getElementById('progKey').value);
+  const correctIdx = Math.floor(Math.random()*PROGRESSIONS.length);
+  const distractors = pickDistractors(correctIdx, 3);
+  const optionIdx = [correctIdx, ...distractors].sort(()=>Math.random()-0.5);
+  progRound = { keyIdx, correctIdx, optionIdx, answered:false };
+  renderProgOptions();
+  document.getElementById('progFeedback').textContent = '';
+  document.getElementById('progFeedback').className = 'feedback';
+}
+
+function renderProgOptions(){
+  const wrap = document.getElementById('progOptions');
+  wrap.innerHTML = '';
+  progRound.optionIdx.forEach(i=>{
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.textContent = progRound.optionIdx.indexOf(i)+1 + '.  ' + PROGRESSIONS[i].map(d=>romanLabel(d,false)).join(' – ');
+    b.addEventListener('click', ()=> answerProgression(i, b));
+    wrap.appendChild(b);
+  });
+}
+
+function answerProgression(chosenIdx, btnEl){
+  if (progRound.answered) return;
+  progRound.answered = true;
+  const correct = chosenIdx === progRound.correctIdx;
+  document.getElementById('progTotal').textContent = parseInt(document.getElementById('progTotal').textContent)+1;
+  if (correct) document.getElementById('progGood').textContent = parseInt(document.getElementById('progGood').textContent)+1;
+
+  [...document.querySelectorAll('#progOptions .opt')].forEach((el,i)=>{
+    const idx = progRound.optionIdx[i];
+    if (idx === progRound.correctIdx) el.classList.add('correct');
+    else if (el===btnEl) el.classList.add('wrong');
+  });
+  const fb = document.getElementById('progFeedback');
+  fb.textContent = correct ? 'Верно!' : ('Неверно — правильный ответ: ' + PROGRESSIONS[progRound.correctIdx].map(d=>romanLabel(d,false)).join(' – '));
+  fb.className = 'feedback ' + (correct?'good':'bad');
+}
+
+function playProgression(){
+  const c = ensureCtx();
+  const keyPc = KEYS[progRound.keyIdx].pc;
+  const degrees = PROGRESSIONS[progRound.correctIdx];
+  const dur = 0.85, gap = 0.05;
+  const start = c.currentTime + 0.05;
+  degrees.forEach((d,i)=>{
+    const midis = chordMidis(keyPc, d, false);
+    chordTone(midis, start + i*(dur+gap), dur);
+  });
+}
+
+document.getElementById('progKey').addEventListener('change', newProgressionRound);
+document.getElementById('progPlay').addEventListener('click', ()=>{
+  if (!progRound || progRound.answered) newProgressionRound();
+  playProgression();
+});
+document.getElementById('progReplay').addEventListener('click', ()=>{
+  if (progRound) playProgression();
+});
+newProgressionRound();
+
+// ---------- module 2: chord tones / scale degrees ----------
+let mode = 'chord'; // 'chord' | 'degree'
+let target = null; // {midi, contextPlay: fn, label, sub}
+let micStream=null, micCtx=null, micAnalyser=null, micRAF=null;
+let holdGoodFrames=0, lastScored=false;
+
+function currentKeyPc(){ return KEYS[parseInt(document.getElementById('singKey').value)].pc; }
+
+function newSingRound(){
+  const keyPc = currentKeyPc();
+  if (mode === 'chord'){
+    const seventh = document.getElementById('seventhChk').checked;
+    const degree = Math.floor(Math.random()*7);
+    const midis = chordMidis(keyPc, degree, seventh);
+    const toneIdx = Math.floor(Math.random()*midis.length);
+    target = {
+      midi: midis[toneIdx],
+      label: TONE_LABEL[toneIdx],
+      sub: romanLabel(degree, seventh) + ' в тональности ' + KEYS[parseInt(document.getElementById('singKey').value)].name.split(' — ')[0],
+      context: (startTime)=> chordTone(midis, startTime, 1.1, 0.13),
+    };
+  } else {
+    const degree = Math.floor(Math.random()*7);
+    const rootMidi = 60 + keyPc;
+    const midi = rootMidi + SCALE[degree];
+    target = {
+      midi,
+      label: (degree+1) + '-я ступень',
+      sub: 'тоника — ' + KEYS[parseInt(document.getElementById('singKey').value)].name.split(' — ')[0],
+      context: (startTime)=> tone(freqFromMidi(rootMidi), startTime, 1.0, 0.2),
+    };
+  }
+  document.getElementById('targetLabel').innerHTML = target.label + '<small id="targetSub">' + target.sub + '</small>';
+  lastScored = false;
+  holdGoodFrames = 0;
+}
+
+document.getElementById('modeChord').addEventListener('click', ()=>{
+  mode = 'chord';
+  document.getElementById('modeChord').classList.add('active');
+  document.getElementById('modeDegree').classList.remove('active');
+  document.getElementById('seventhWrap').style.opacity = 1;
+  newSingRound();
+});
+document.getElementById('modeDegree').addEventListener('click', ()=>{
+  mode = 'degree';
+  document.getElementById('modeDegree').classList.add('active');
+  document.getElementById('modeChord').classList.remove('active');
+  document.getElementById('seventhWrap').style.opacity = .4;
+  newSingRound();
+});
+document.getElementById('singKey').addEventListener('change', newSingRound);
+document.getElementById('seventhChk').addEventListener('change', newSingRound);
+document.getElementById('nextTarget').addEventListener('click', newSingRound);
+
+document.getElementById('ctxPlay').addEventListener('click', ()=>{
+  const c = ensureCtx();
+  target.context(c.currentTime + 0.03);
+});
+document.getElementById('playTargetBtn').addEventListener('click', ()=>{
+  const c = ensureCtx();
+  tone(freqFromMidi(target.midi), c.currentTime + 0.02, 0.9, 0.25);
+});
+
+newSingRound();
+
+// ---------- pitch detection (autocorrelation) ----------
+function autoCorrelate(buf, sampleRate){
+  const SIZE = buf.length;
+  let rms = 0;
+  for (let i=0;i<SIZE;i++){ rms += buf[i]*buf[i]; }
+  rms = Math.sqrt(rms/SIZE);
+  if (rms < 0.01) return -1;
+
+  let r1=0, r2=SIZE-1;
+  const thres = 0.2;
+  for (let i=0;i<SIZE/2;i++){ if (Math.abs(buf[i])<thres){ r1=i; break; } }
+  for (let i=1;i<SIZE/2;i++){ if (Math.abs(buf[SIZE-i])<thres){ r2=SIZE-i; break; } }
+  const trimmed = buf.slice(r1,r2);
+  const N = trimmed.length;
+  if (N < 8) return -1;
+
+  const c = new Array(N).fill(0);
+  for (let i=0;i<N;i++){ for (let j=0;j<N-i;j++){ c[i] += trimmed[j]*trimmed[j+i]; } }
+  let d=0; while (d < N-1 && c[d] > c[d+1]) d++;
+  let maxval=-1, maxpos=-1;
+  for (let i=d;i<N;i++){ if (c[i] > maxval){ maxval=c[i]; maxpos=i; } }
+  let T0 = maxpos;
+  if (T0 <= 0) return -1;
+  const x1 = c[T0-1] ?? c[T0], x2 = c[T0], x3 = c[T0+1] ?? c[T0];
+  const a = (x1 + x3 - 2*x2)/2;
+  const b = (x3 - x1)/2;
+  if (a) T0 = T0 - b/(2*a);
+  if (T0 <= 0) return -1;
+  return sampleRate/T0;
+}
+
+async function startMic(){
+  try{
+    micStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
+  }catch(err){
+    document.getElementById('micStatus').textContent = 'Не удалось получить доступ к микрофону: ' + (err && err.message ? err.message : 'запрещено браузером/окружением.');
+    return false;
+  }
+  micCtx = ensureCtx();
+  const src = micCtx.createMediaStreamSource(micStream);
+  micAnalyser = micCtx.createAnalyser();
+  micAnalyser.fftSize = 2048;
+  src.connect(micAnalyser);
+  document.getElementById('micStatus').textContent = 'Слушаю — спой указанный тон.';
+  document.getElementById('needle').classList.add('show');
+  micLoop();
+  return true;
+}
+function stopMic(){
+  if (micRAF) cancelAnimationFrame(micRAF);
+  if (micStream) micStream.getTracks().forEach(t=>t.stop());
+  micStream = null; micAnalyser = null;
+  document.getElementById('detected').textContent = 'Микрофон выключен.';
+  document.getElementById('needle').classList.remove('show');
+  document.getElementById('micStatus').textContent = 'Необязательно: нажми «Слушать» и разреши микрофон, чтобы получать оценку попадания в ноту.';
+}
+function micLoop(){
+  const buf = new Float32Array(micAnalyser.fftSize);
+  micAnalyser.getFloatTimeDomainData(buf);
+  const freq = autoCorrelate(buf, micCtx.sampleRate);
+  const needle = document.getElementById('needle');
+  const detected = document.getElementById('detected');
+
+  if (freq > 50 && freq < 1500){
+    const sungMidi = midiFromFreq(freq);
+    const cents = (sungMidi - target.midi) * 100;
+    const clamped = Math.max(-50, Math.min(50, cents));
+    needle.style.left = (50 + clamped) + '%';
+    const inTune = Math.abs(cents) <= 25;
+    needle.classList.toggle('good', inTune);
+    needle.classList.toggle('bad', !inTune);
+    detected.innerHTML = `слышу: <b>${nameFromMidiRound(sungMidi)}</b> (${freq.toFixed(0)} Гц) · отклонение <b>${cents>0?'+':''}${cents.toFixed(0)}¢</b>`;
+
+    if (inTune){
+      holdGoodFrames++;
+      if (holdGoodFrames > 18 && !lastScored){
+        lastScored = true;
+        document.getElementById('singGood').textContent = parseInt(document.getElementById('singGood').textContent)+1;
+        document.getElementById('singTotal').textContent = parseInt(document.getElementById('singTotal').textContent)+1;
+        setTimeout(newSingRound, 500);
+      }
+    } else holdGoodFrames = 0;
+  } else {
+    needle.classList.remove('good','bad');
+    needle.style.left = '50%';
+    detected.textContent = 'слушаю тишину…';
+    holdGoodFrames = 0;
+  }
+  micRAF = requestAnimationFrame(micLoop);
+}
+
+const micBtn = document.getElementById('micBtn');
+let micOn = false;
+micBtn.addEventListener('click', async ()=>{
+  if (!micOn){
+    micBtn.disabled = true;
+    const ok = await startMic();
+    micBtn.disabled = false;
+    if (ok){ micOn = true; micBtn.textContent = '⏹ Остановить'; micBtn.classList.add('toggled'); }
+  } else {
+    stopMic(); micOn = false;
+    micBtn.textContent = '🎙 Слушать'; micBtn.classList.remove('toggled');
+  }
+});
+</script>

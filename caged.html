@@ -1,0 +1,983 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CAGED на грифе</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="ear-theme.js"></script>
+<link rel="stylesheet" href="ear-common.css">
+<link rel="stylesheet" href="ear-kid.css">
+<style>
+  .page{ max-width:1180px; }
+  .layout{ grid-template-columns:1fr 280px; }
+  @media (max-width:900px){ .layout{ grid-template-columns:1fr; } }
+  .tabs{ flex-wrap:wrap; border-radius:14px; }
+  .tabs button{ min-width:20%; }
+  @media (max-width:620px){ .tabs button{ min-width:33%; } }
+
+
+  .prompt{ text-align:center; margin-bottom:1rem; }
+  .prompt .big{ font-family:var(--font-display); font-size:clamp(1.6rem, 4vw, 2.3rem); font-weight:600; line-height:1.15; }
+  .prompt .big em{ font-style:normal; color:var(--brass-deep); }
+  .prompt .sub{ color:var(--muted); font-size:.88rem; margin-top:.3rem; }
+
+  .legend{ display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; font-size:.78rem; color:var(--muted); margin-bottom:1rem; }
+  .legend i{ display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:.35rem; vertical-align:-1px; }
+
+  .shape-steps{ display:flex; gap:.4rem; justify-content:center; flex-wrap:wrap; margin-bottom:1rem; }
+  .shape-steps button{
+    min-width:52px; padding:.45rem .6rem; border-radius:10px; cursor:pointer;
+    border:1.5px solid var(--line); background:var(--paper); color:var(--ink);
+    font:600 1rem var(--font-display);
+  }
+  .shape-steps button small{ display:block; font:500 .62rem var(--font-mono); color:var(--muted); }
+  .shape-steps button.active{ border-color:var(--brass); background:var(--brass-tint); }
+
+  .answers{ display:flex; gap:.6rem; justify-content:center; margin-bottom:1rem; flex-wrap:wrap; }
+  .answers .degree-tile{ max-width:120px; flex-basis:96px; }
+
+  .prog-cards{ display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; margin-bottom:1rem; }
+  .prog-card{
+    min-width:84px; padding:.5rem .6rem; text-align:center; cursor:pointer;
+    border:1.5px solid var(--line); border-radius:10px; background:var(--paper); color:var(--ink);
+  }
+  .prog-card .rn{ font:600 1.05rem var(--font-display); }
+  .prog-card .nm{ font:500 .8rem var(--font-mono); color:var(--brass-deep); }
+  .prog-card .sh{ font:500 .66rem var(--font-mono); color:var(--muted); }
+  .prog-card.active{ border-color:var(--brass); box-shadow:0 0 0 3px var(--brass-tint); }
+
+  .shape-checks{ display:flex; gap:.6rem; flex-wrap:wrap; }
+  .shape-checks label{ flex-direction:row !important; align-items:center; gap:.3rem !important; color:var(--ink) !important; cursor:pointer; }
+  .shape-checks input{ accent-color:var(--brass); }
+  .tempo-row{ display:flex; align-items:center; gap:.6rem; }
+  .tempo-row input{ flex:1; }
+  .tempo-val{ font-family:var(--font-mono); font-size:.85rem; color:var(--brass-deep); min-width:4.5em; text-align:right; }
+  .self-grade{ display:flex; gap:.5rem; justify-content:center; margin-top:.25rem; }
+</style>
+
+<div class="page">
+  <nav class="site-nav" aria-label="Тренажёры">
+    <a href="cadence.html">Каданс</a>
+    <a href="solfege.html">Пение с листа</a>
+    <a href="caged.html" aria-current="page">CAGED</a>
+    <a href="modes.html">Лады</a>
+    <a href="improv.html">Импровизация</a>
+  </nav>
+
+  <header class="hero">
+    <h1>CAGED на грифе</h1>
+    <p class="tagline">Пять форм аккорда, которые вместе покрывают весь гриф: C, A, G, E, D</p>
+  </header>
+
+  <main class="layout">
+    <section class="trainer" aria-label="Тренажёр">
+      <div class="tabs" role="tablist" aria-label="Упражнение">
+        <button type="button" data-tab="find" role="tab" class="active">Найди форму</button>
+        <button type="button" data-tab="walk" role="tab">Обход грифа</button>
+        <button type="button" data-tab="degrees" role="tab">Ступени</button>
+        <button type="button" data-tab="arp" role="tab">Арпеджио</button>
+        <button type="button" data-tab="position" role="tab">В позиции</button>
+      </div>
+
+      <div class="legend" id="legend">
+        <span><i style="background:var(--tone-r)"></i>1 — тоника</span>
+        <span><i style="background:var(--tone-3)"></i>3 — терция</span>
+        <span><i style="background:var(--tone-5)"></i>5 — квинта</span>
+      </div>
+
+      <!-- 1. Найди форму -->
+      <div class="tab-panel" id="panel-find">
+        <div class="prompt">
+          <div class="big" id="findPrompt">—</div>
+          <div class="sub" id="findSub">Найдите эту форму на гитаре, затем проверьте</div>
+        </div>
+        <div class="board-wrap"><svg class="board" id="findBoard" viewBox="0 0 1000 232" role="img" aria-label="Гриф"></svg></div>
+        <div class="stage">
+          <div class="btn-row">
+            <button type="button" class="play-btn" id="findRevealBtn">Показать</button>
+          </div>
+          <div class="self-grade" id="findGrade" hidden>
+            <button type="button" class="ghost-btn" data-grade="1">Нашёл сам</button>
+            <button type="button" class="ghost-btn" data-grade="0">Подсмотрел</button>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="ghost-btn" id="findPlayBtn">Сыграть аккорд</button>
+            <button type="button" class="next-btn" id="findNextBtn">Следующее →</button>
+          </div>
+        </div>
+        <p class="hint" style="text-align:center">
+          Счёт: <span id="findScore">0 из 0</span>. <span class="kbd">Пробел</span> показать · <span class="kbd">N</span> следующее
+        </p>
+      </div>
+
+      <!-- 2. Обход грифа -->
+      <div class="tab-panel" id="panel-walk" hidden>
+        <div class="prompt">
+          <div class="big" id="walkPrompt">—</div>
+          <div class="sub">Один аккорд пятью формами снизу вверх. Соседние формы делят общие ноты — это и есть «стык».</div>
+        </div>
+        <div class="shape-steps" id="walkSteps"></div>
+        <div class="board-wrap"><svg class="board" id="walkBoard" viewBox="0 0 1000 232" role="img" aria-label="Гриф"></svg></div>
+        <div class="stage">
+          <div class="btn-row">
+            <button type="button" class="ghost-btn" id="walkPrevBtn">← Ниже</button>
+            <button type="button" class="play-btn" id="walkPlayBtn">Сыграть по грифу</button>
+            <button type="button" class="ghost-btn" id="walkNextBtn">Выше →</button>
+          </div>
+          <div class="btn-row">
+            <label class="checkbox"><input type="checkbox" id="walkAllToggle" checked> Показывать все формы сразу</label>
+          </div>
+          <div class="btn-row">
+            <label for="walkRoot" style="display:flex;gap:.5rem;align-items:center;font-size:.85rem;color:var(--muted)">Аккорд
+              <select id="walkRoot"></select>
+            </label>
+            <button type="button" class="ghost-btn" id="walkRandomBtn">Случайный</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Ступени -->
+      <div class="tab-panel" id="panel-degrees" hidden>
+        <div class="prompt">
+          <div class="big" id="degPrompt">—</div>
+          <div class="sub">Какая ступень аккорда у выделенной ноты?</div>
+        </div>
+        <div class="board-wrap"><svg class="board" id="degBoard" viewBox="0 0 1000 232" role="img" aria-label="Гриф"></svg></div>
+        <div class="feedback" id="degFeedback"></div>
+        <div class="answers" id="degAnswers">
+          <button type="button" class="degree-tile" data-ans="0"><span class="roman">1</span><span class="chordname">тоника</span></button>
+          <button type="button" class="degree-tile" data-ans="1"><span class="roman" id="degThirdSym">3</span><span class="chordname">терция</span></button>
+          <button type="button" class="degree-tile" data-ans="2"><span class="roman">5</span><span class="chordname">квинта</span></button>
+        </div>
+        <div class="stage">
+          <div class="btn-row">
+            <button type="button" class="ghost-btn" id="degPlayBtn">Нота и аккорд</button>
+            <button type="button" class="next-btn" id="degNextBtn" hidden>Следующая →</button>
+          </div>
+        </div>
+        <p class="hint" style="text-align:center">
+          Счёт: <span id="degScore">0 из 0</span> · серия <span id="degStreak">0</span>.
+          <span class="kbd">1</span> <span class="kbd">3</span> <span class="kbd">5</span> ответ · <span class="kbd">N</span> дальше
+        </p>
+      </div>
+
+      <!-- 4. Арпеджио и гаммы -->
+      <div class="tab-panel" id="panel-arp" hidden>
+        <div class="prompt">
+          <div class="big" id="arpPrompt">—</div>
+          <div class="sub" id="arpSub">Звуки аккорда по одному — мост от аккорда к мелодии</div>
+        </div>
+        <div class="shape-steps" id="arpSteps"></div>
+        <div class="board-wrap"><svg class="board" id="arpBoard" viewBox="0 0 1000 232" role="img" aria-label="Гриф"></svg></div>
+        <div class="stage">
+          <div class="btn-row">
+            <button type="button" class="play-btn" id="arpPlayBtn">Сыграть вверх и вниз</button>
+            <button type="button" class="ghost-btn" id="arpChordBtn">Аккорд</button>
+          </div>
+          <div class="btn-row">
+            <div class="mode-toggle" role="group" aria-label="Что показывать" id="arpViewGroup" style="min-width:300px">
+              <button type="button" data-view="arp" class="active">Арпеджио</button>
+              <button type="button" data-view="pent">Пентатоника</button>
+              <button type="button" data-view="scale">Гамма</button>
+            </div>
+          </div>
+          <div class="btn-row">
+            <label for="arpRoot" style="display:flex;gap:.5rem;align-items:center;font-size:.85rem;color:var(--muted)">Аккорд
+              <select id="arpRoot"></select>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. В позиции -->
+      <div class="tab-panel" id="panel-position" hidden>
+        <div class="prompt">
+          <div class="big" id="posPrompt">—</div>
+          <div class="sub" id="posSub">Все аккорды — в одной зоне грифа, без прыжков</div>
+        </div>
+        <div class="prog-cards" id="posCards"></div>
+        <div class="board-wrap"><svg class="board" id="posBoard" viewBox="0 0 1000 232" role="img" aria-label="Гриф"></svg></div>
+        <div class="stage">
+          <div class="btn-row">
+            <button type="button" class="play-btn" id="posPlayBtn">Играть по кругу</button>
+            <button type="button" class="ghost-btn" id="posScaleBtn">Гамма в позиции</button>
+          </div>
+          <div class="btn-row">
+            <div class="mode-toggle" role="group" aria-label="Что показывать" id="posViewGroup" style="min-width:340px">
+              <button type="button" data-view="voicing" class="active">Аппликатура</button>
+              <button type="button" data-view="arp">Звуки аккорда</button>
+              <button type="button" data-view="guide">Ведение терций</button>
+            </div>
+          </div>
+          <div class="sub" id="posGuideHint" hidden style="font-size:.82rem;color:var(--muted);text-align:center;max-width:560px">
+            Импровизируйте поверх петли и на первой доле каждого аккорда попадайте в его терцию (зелёные).
+            В последнюю долю перед сменой обведена терция следующего аккорда — ближайшая цель.
+          </div>
+          <div class="btn-row">
+            <label class="checkbox"><input type="checkbox" id="posScaleToggle"> Показать гамму позиции</label>
+            <label class="checkbox"><input type="checkbox" id="posDroneToggle"> Бурдон тоники</label>
+          </div>
+          <div class="field-row" style="width:100%;max-width:560px">
+            <label for="posKey" style="display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:var(--muted)">Тональность (мажор)
+              <select id="posKey"></select>
+            </label>
+            <label for="posShape" style="display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:var(--muted)">Позиция: I в форме
+              <select id="posShape"></select>
+            </label>
+          </div>
+          <label for="posProg" style="display:flex;flex-direction:column;gap:.3rem;font-size:.85rem;color:var(--muted);width:100%;max-width:560px">Последовательность
+            <select id="posProg"></select>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <aside class="settings" aria-label="Настройки">
+      <h2>Настройки</h2>
+
+      <div>
+        <div class="mode-toggle" role="group" aria-label="Тип аккорда" id="qualityGroup">
+          <button type="button" data-quality="major" class="active">Мажор</button>
+          <button type="button" data-quality="minor">Минор</button>
+        </div>
+      </div>
+
+      <div>
+        <span style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.4rem">Формы в заданиях</span>
+        <div class="shape-checks" id="shapeChecks"></div>
+      </div>
+
+      <label for="labelSelect">Подписи на грифе
+        <select id="labelSelect">
+          <option value="degree">Ступени (1, 3, 5)</option>
+          <option value="note">Ноты (C, E, G)</option>
+          <option value="none">Без подписей</option>
+        </select>
+      </label>
+
+      <label for="autoRevealSelect">«Найди форму»: показать сам через
+        <select id="autoRevealSelect">
+          <option value="0">не показывать</option>
+          <option value="4">4 секунды</option>
+          <option value="7">7 секунд</option>
+          <option value="12">12 секунд</option>
+        </select>
+      </label>
+
+      <label for="tempoSlider">Темп
+        <span class="tempo-row">
+          <input type="range" id="tempoSlider" min="40" max="160" step="2" value="80">
+          <span class="tempo-val" id="tempoValue">80 уд/мин</span>
+        </span>
+      </label>
+
+      <label for="instSelect">Инструмент
+        <select id="instSelect"></select>
+      </label>
+      <div class="status" id="audioStatus" hidden></div>
+
+      <p class="hint">
+        Форма — это аппликатура открытого аккорда (C, A, G, E или D), сдвинутая по грифу.
+        Бывшие открытые струны становятся баррэ. Буква формы — не название аккорда: «D в форме C» — это D, взятый аппликатурой аккорда C.
+      </p>
+    </aside>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+<script src="ear-audio.js"></script>
+<script>
+(function(){
+  'use strict';
+
+  // ---------- теория ----------
+  var OPEN = [40, 45, 50, 55, 59, 64];            // строй: струны 6→1 (E2 A2 D3 G3 B3 E4)
+  var MAX_FRET = 15;
+  var SHAPE_ORDER = ['C','A','G','E','D'];
+  // Открытые аппликатуры по струнам 6→1 (null — струна не играет) и тоника исходного аккорда.
+  var SHAPES = {
+    major: {
+      C: { frets:[null,3,2,0,1,0], root:0 },
+      A: { frets:[null,0,2,2,2,0], root:9 },
+      G: { frets:[3,2,0,0,0,3],    root:7 },
+      E: { frets:[0,2,2,1,0,0],    root:4 },
+      D: { frets:[null,null,0,2,3,2], root:2 }
+    },
+    minor: {
+      C: { frets:[null,3,1,0,1,null], root:0 },
+      A: { frets:[null,0,2,2,1,0],    root:9 },
+      G: { frets:[3,1,0,0,3,3],       root:7 },
+      E: { frets:[0,2,2,0,0,0],       root:4 },
+      D: { frets:[null,null,0,2,3,1], root:2 }
+    }
+  };
+  var SHARP = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+  var FLAT  = ['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+  var CHORD_ROOTS = ['C','D♭','D','E♭','E','F','F♯','G','A♭','A','B♭','B']; // привычные названия аккордов
+  var FLAT_KEYS = { 5:1, 10:1, 3:1, 8:1, 1:1 };  // F, B♭, E♭, A♭, D♭
+
+  function mod(n, m){ return ((n % m) + m) % m; }
+  function pick(a){ return a[Math.floor(Math.random() * a.length)]; }
+
+  // Аппликатура формы для аккорда с тоникой rootPc. octaveUp — сдвиг на 12 ладов, если помещается.
+  function voicing(quality, shapeName, rootPc, octaveUp){
+    var sh = SHAPES[quality][shapeName];
+    var shift = mod(rootPc - sh.root, 12) + (octaveUp ? 12 : 0);
+    var frets = sh.frets.map(function(f){ return f === null ? null : f + shift; });
+    var used = frets.filter(function(f){ return f !== null; });
+    var lo = Math.min.apply(null, used), hi = Math.max.apply(null, used);
+    if(hi > MAX_FRET) return null;
+    return { shape: shapeName, quality: quality, rootPc: rootPc, frets: frets, lo: lo, hi: hi, shift: shift };
+  }
+
+  function noteRole(v, stringIdx, fret){
+    var pc = mod(OPEN[stringIdx] + fret, 12);
+    var iv = mod(pc - v.rootPc, 12);
+    if(iv === 0) return 'r';
+    if(iv === 3 || iv === 4) return 't3';
+    if(iv === 7) return 't5';
+    return 'plain';
+  }
+
+  function chordLabel(rootPc, quality){ return CHORD_ROOTS[rootPc] + (quality === 'minor' ? 'm' : ''); }
+
+  function noteName(pc, flats){ return (flats ? FLAT : SHARP)[pc]; }
+
+  function voicingMidi(v){
+    var out = [];
+    v.frets.forEach(function(f, s){ if(f !== null) out.push(OPEN[s] + f); });
+    return out;
+  }
+
+  // Все пять форм аккорда по грифу, снизу вверх (плюс повтор первой формы октавой выше, если влезает).
+  function neckWalk(quality, rootPc){
+    var list = SHAPE_ORDER.map(function(n){ return voicing(quality, n, rootPc, false); }).filter(Boolean);
+    list.sort(function(a, b){ return a.lo - b.lo || a.hi - b.hi; });
+    var first = list[0];
+    var again = voicing(quality, first.shape, rootPc, true);
+    if(again) list.push(again);
+    return list;
+  }
+
+  // ---------- состояние ----------
+  var STORAGE_KEY = 'caged-trainer-v1';
+  var state = {
+    tab:'find', quality:'major', shapes:{C:true,A:true,G:true,E:true,D:true}, labels:'degree',
+    autoReveal:0, tempo:80, inst:'steel',
+    findGood:0, findTotal:0, degCorrect:0, degTotal:0, degStreak:0,
+    walkRoot:0, posKey:0, posShape:'E', posProg:0, posScale:false,
+    arpRoot:0, arpShape:'E', arpView:'arp', posView:'voicing'
+  };
+  var PERSIST = Object.keys(state);
+  function load(){
+    try{
+      var saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '{}');
+      PERSIST.forEach(function(k){ if(saved[k] !== undefined) state[k] = saved[k]; });
+    }catch(e){}
+  }
+  function save(){
+    try{
+      var o = {}; PERSIST.forEach(function(k){ o[k] = state[k]; });
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(o));
+    }catch(e){}
+  }
+  function enabledShapes(){
+    var list = SHAPE_ORDER.filter(function(n){ return state.shapes[n]; });
+    return list.length ? list : SHAPE_ORDER.slice();
+  }
+
+  // ---------- гриф (SVG) ----------
+  var NUT_X = 52, END_X = 988, TOP_Y = 28, STR_GAP = 30;
+  function fretX(n){
+    var k = (1 - Math.pow(2, -n / 12)) / (1 - Math.pow(2, -MAX_FRET / 12));
+    return NUT_X + (END_X - NUT_X) * k;
+  }
+  function noteX(f){ return f === 0 ? NUT_X - 24 : (fretX(f - 1) + fretX(f)) / 2; }
+  function stringY(s){ return TOP_Y + (5 - s) * STR_GAP; }   // s: 0 = 6-я струна (внизу)
+
+  function el(tag, attrs, text){
+    var e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    Object.keys(attrs || {}).forEach(function(k){ e.setAttribute(k, attrs[k]); });
+    if(text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  // opts: { voicings:[{v, cls, showMutes}], regions:[{v, label, active}], scale:[{s,f,role,label}], ask:{s,f}, playing:{s:true} }
+  function drawBoard(svg, opts){
+    svg.innerHTML = '';
+    var bottom = stringY(0);
+    svg.appendChild(el('rect', { class:'wood', x:NUT_X, y:TOP_Y - 12, width:END_X - NUT_X, height:bottom - TOP_Y + 24, rx:3 }));
+    (opts.regions || []).forEach(function(r){
+      var x1 = r.v.lo === 0 ? NUT_X - 40 : fretX(r.v.lo - 1) + 2;
+      var x2 = fretX(r.v.hi) - 2;
+      var g = el('g', { class:'region' + (r.active ? ' active' : '') });
+      g.appendChild(el('rect', { x:x1, y:TOP_Y - 12, width:Math.max(8, x2 - x1), height:bottom - TOP_Y + 24, rx:6 }));
+      g.appendChild(el('text', { x:(x1 + x2) / 2, y:TOP_Y - 17 }, r.label));
+      svg.appendChild(g);
+    });
+    [3,5,7,9,15].forEach(function(n){ svg.appendChild(el('circle', { class:'inlay', cx:noteX(n), cy:(stringY(2) + stringY(3)) / 2, r:7 })); });
+    svg.appendChild(el('circle', { class:'inlay', cx:noteX(12), cy:(stringY(1) + stringY(2)) / 2, r:7 }));
+    svg.appendChild(el('circle', { class:'inlay', cx:noteX(12), cy:(stringY(3) + stringY(4)) / 2, r:7 }));
+    for(var n = 1; n <= MAX_FRET; n++) svg.appendChild(el('line', { class:'fret', x1:fretX(n), x2:fretX(n), y1:TOP_Y - 12, y2:bottom + 12 }));
+    svg.appendChild(el('line', { class:'nut', x1:NUT_X, x2:NUT_X, y1:TOP_Y - 13, y2:bottom + 13 }));
+    for(var s = 0; s < 6; s++){
+      svg.appendChild(el('line', { class:'string', x1:NUT_X - 40, x2:END_X, y1:stringY(s), y2:stringY(s), 'stroke-width': 0.8 + (5 - s) * 0.3 }));
+    }
+    [1,3,5,7,9,12,15].forEach(function(n){ svg.appendChild(el('text', { class:'fretnum', x:noteX(n), y:bottom + 32 }, n)); });
+
+    (opts.scale || []).forEach(function(d){ drawDot(svg, d.s, d.f, 'scale ' + d.role, d.label); });
+    (opts.voicings || []).forEach(function(item){
+      var v = item.v;
+      v.frets.forEach(function(f, s){
+        if(f === null){
+          if(item.showMutes) svg.appendChild(el('text', { class:'mute', x:NUT_X - 24, y:stringY(s) }, '×'));
+          return;
+        }
+        var role = noteRole(v, s, f);
+        var cls = (item.plain ? 'plain' : role) + (item.cls ? ' ' + item.cls : '');
+        if(opts.ask && opts.ask.s === s && opts.ask.f === f) cls = 'ask';
+        if(opts.playing && opts.playing[s + ':' + f]) cls += ' playing';
+        drawDot(svg, s, f, cls, item.plain || (opts.ask && opts.ask.s === s && opts.ask.f === f) ? (opts.ask && opts.ask.s === s && opts.ask.f === f ? '?' : '') : dotLabel(v.rootPc, s, f, role));
+      });
+    });
+    (opts.dots || []).forEach(function(d){ drawDot(svg, d.s, d.f, d.cls, d.label, d.r); });
+  }
+
+  function drawDot(svg, s, f, cls, label, r){
+    var g = el('g', { class:'dot ' + cls });
+    g.appendChild(el('circle', { cx:noteX(f), cy:stringY(s), r:r || 12 }));
+    if(label) g.appendChild(el('text', { x:noteX(f), y:stringY(s) + 0.5 }, label));
+    svg.appendChild(g);
+  }
+
+  function dotLabel(rootPc, s, f, role){
+    if(state.labels === 'none') return '';
+    var pc = mod(OPEN[s] + f, 12);
+    if(state.labels === 'note') return noteName(pc, !!FLAT_KEYS[rootPc] || rootPc === 3);
+    return { r:'1', t3: mod(pc - rootPc, 12) === 3 ? '♭3' : '3', t5:'5', plain:'' }[role];
+  }
+
+  // ---------- звук ----------
+  function strum(v, dur){ EarAudio.hit(state.inst, voicingMidi(v), dur || 2.2); }
+  function beat(){ return 60 / state.tempo; }
+
+  // ---------- 1. Найди форму ----------
+  var find = { v:null, revealed:false, timer:null };
+  function findNew(){
+    clearTimeout(find.timer);
+    var shape = pick(enabledShapes());
+    var root, v;
+    do { root = Math.floor(Math.random() * 12); v = voicing(state.quality, shape, root, false); }
+    while(!v || (find.v && find.v.rootPc === root && find.v.shape === shape));
+    // Иногда та же форма выше на октаву, если помещается и не открытая.
+    var up = voicing(state.quality, shape, root, true);
+    if(up && Math.random() < .3) v = up;
+    find.v = v; find.revealed = false;
+    els.findPrompt.innerHTML = '<em>' + chordLabel(root, state.quality) + '</em> в форме ' + shape;
+    els.findSub.textContent = 'Найдите эту форму на гитаре, сыграйте — и проверьте';
+    els.findGrade.hidden = true;
+    els.findRevealBtn.hidden = false;
+    drawBoard(els.findBoard, {});
+    if(state.autoReveal > 0) find.timer = setTimeout(findReveal, state.autoReveal * 1000);
+  }
+  function findReveal(){
+    clearTimeout(find.timer);
+    if(find.revealed) return;
+    find.revealed = true;
+    var v = find.v;
+    drawBoard(els.findBoard, { voicings:[{ v:v, showMutes:true }], regions:[{ v:v, label:'форма ' + v.shape, active:true }] });
+    els.findSub.textContent = v.lo === 0 ? 'Открытая позиция' : 'Лады ' + v.lo + '–' + v.hi + (v.lo === v.shift && v.shift > 0 ? ' · баррэ на ' + v.shift + '-м ладу' : '');
+    els.findRevealBtn.hidden = true;
+    els.findGrade.hidden = false;
+    strum(v);
+  }
+  function findGrade(ok){
+    state.findTotal++; if(ok) state.findGood++;
+    save(); updateScores(); findNew();
+  }
+
+  // ---------- 2. Обход грифа ----------
+  var walk = { list:[], idx:0, playing:false };
+  function walkBuild(){
+    walk.list = neckWalk(state.quality, state.walkRoot);
+    walk.idx = Math.min(walk.idx, walk.list.length - 1);
+    els.walkPrompt.innerHTML = '<em>' + chordLabel(state.walkRoot, state.quality) + '</em> по всему грифу';
+    els.walkSteps.innerHTML = '';
+    walk.list.forEach(function(v, i){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = v.shape + '<small>' + (v.lo === 0 ? 'откр.' : v.lo + '–' + v.hi) + '</small>';
+      b.addEventListener('click', function(){ walk.idx = i; walkDraw(); strum(v); });
+      els.walkSteps.appendChild(b);
+    });
+    walkDraw();
+  }
+  function walkDraw(playingKey){
+    var all = els.walkAllToggle.checked;
+    var cur = walk.list[walk.idx];
+    var voicings = [], regions = [];
+    walk.list.forEach(function(v, i){
+      var active = i === walk.idx;
+      if(!all && !active) return;
+      regions.push({ v:v, label:v.shape, active:active });
+      if(!active) voicings.push({ v:v, cls:'dim' });
+    });
+    voicings.push({ v:cur, showMutes:true });
+    drawBoard(els.walkBoard, { voicings:voicings, regions:regions });
+    Array.prototype.forEach.call(els.walkSteps.children, function(b, i){ b.classList.toggle('active', i === walk.idx); });
+  }
+  function walkPlay(){
+    if(walk.playing){ walkStop(); return; }
+    walk.playing = true;
+    els.walkPlayBtn.textContent = 'Стоп';
+    var ev = [], step = beat() * 2;
+    var seq = walk.list.map(function(v, i){ return i; });
+    seq = seq.concat(seq.slice(0, -1).reverse());
+    seq.forEach(function(i, k){
+      var v = walk.list[i];
+      ev.push({ time: k * step, dur: step * 1.1, inst: state.inst, midi: voicingMidi(v), vel:.6, onStart: function(){ walk.idx = i; walkDraw(); } });
+    });
+    EarAudio.play(ev, { tail:.4, onEnd: walkStop });
+  }
+  function walkStop(){
+    walk.playing = false;
+    els.walkPlayBtn.textContent = 'Сыграть по грифу';
+    EarAudio.stop();
+  }
+
+  // ---------- 3. Ступени ----------
+  var deg = { v:null, ask:null, answered:false };
+  function degNew(){
+    var shape = pick(enabledShapes()), root, v;
+    do { root = Math.floor(Math.random() * 12); v = voicing(state.quality, shape, root, Math.random() < .3); }
+    while(!v);
+    var notes = [];
+    v.frets.forEach(function(f, s){ if(f !== null) notes.push({ s:s, f:f }); });
+    var prev = deg.ask;
+    var a;
+    do { a = pick(notes); } while(prev && notes.length > 1 && a.s === prev.s && a.f === prev.f);
+    deg.v = v; deg.ask = a; deg.answered = false;
+    els.degPrompt.innerHTML = '<em>' + chordLabel(root, state.quality) + '</em> в форме ' + shape;
+    els.degThirdSym.textContent = state.quality === 'minor' ? '♭3' : '3';
+    els.degFeedback.textContent = ''; els.degFeedback.className = 'feedback';
+    els.degNextBtn.hidden = true;
+    Array.prototype.forEach.call(els.degAnswers.children, function(b){ b.disabled = false; b.classList.remove('is-correct', 'is-wrong'); });
+    drawBoard(els.degBoard, { voicings:[{ v:v, plain:true, showMutes:true }], ask:a, regions:[{ v:v, label:'форма ' + shape, active:false }] });
+  }
+  function degAnswer(ans){
+    if(deg.answered) return;
+    deg.answered = true;
+    var role = noteRole(deg.v, deg.ask.s, deg.ask.f);
+    var correct = { r:0, t3:1, t5:2 }[role];
+    state.degTotal++;
+    var pc = mod(OPEN[deg.ask.s] + deg.ask.f, 12);
+    var nm = noteName(pc, !!FLAT_KEYS[deg.v.rootPc]);
+    var roleRu = ['тоника', 'терция', 'квинта'][correct];
+    var btns = els.degAnswers.children;
+    if(ans === correct){
+      state.degCorrect++; state.degStreak++;
+      btns[ans].classList.add('is-correct');
+      setFeedback(els.degFeedback, 'Верно — ' + roleRu + ' (' + nm + ')', 'good');
+    } else {
+      state.degStreak = 0;
+      btns[ans].classList.add('is-wrong');
+      btns[correct].classList.add('is-correct');
+      setFeedback(els.degFeedback, 'Это ' + roleRu + ' (' + nm + ')', 'bad');
+    }
+    Array.prototype.forEach.call(btns, function(b){ b.disabled = true; });
+    els.degNextBtn.hidden = false;
+    save(); updateScores();
+    drawBoard(els.degBoard, { voicings:[{ v:deg.v, showMutes:true }], playing: (function(){ var o = {}; o[deg.ask.s + ':' + deg.ask.f] = true; return o; })(), regions:[{ v:deg.v, label:'форма ' + deg.v.shape, active:false }] });
+    degSound();
+  }
+  function degSound(){
+    var m = OPEN[deg.ask.s] + deg.ask.f;
+    EarAudio.hit(state.inst, [m], 1.0);
+    EarAudio.hit(state.inst, voicingMidi(deg.v), 2.0, { delay: 1.0 });
+  }
+
+  // ---------- 4. В позиции ----------
+  var PROGS = [
+    { name:'I – IV – V – I',  deg:[0,3,4,0] },
+    { name:'I – V – vi – IV', deg:[0,4,5,3] },
+    { name:'I – vi – IV – V', deg:[0,5,3,4] },
+    { name:'ii – V – I',      deg:[1,4,0,0] },
+    { name:'vi – IV – I – V', deg:[5,3,0,4] },
+    { name:'I – IV – I – V',  deg:[0,3,0,4] },
+    { name:'I – iii – IV – V',deg:[0,2,3,4] }
+  ];
+  var MAJOR = [0,2,4,5,7,9,11];
+  var ROMAN = ['I','ii','iii','IV','V','vi','vii°'];
+  var pos = { chords:[], idx:0, playing:false };
+
+  function posBuild(){
+    var key = state.posKey;
+    var tonicV = voicing('major', state.posShape, key, false);
+    var up = voicing('major', state.posShape, key, true);
+    if(!tonicV) tonicV = up;
+    var center = (tonicV.lo + tonicV.hi) / 2;
+    var prog = PROGS[state.posProg];
+    pos.center = center;
+    pos.zone = [Math.max(0, tonicV.lo - 1), Math.min(MAX_FRET, tonicV.hi + 1)];
+    pos.chords = prog.deg.map(function(d){
+      var root = mod(key + MAJOR[d], 12);
+      var q = [1,2,5].indexOf(d) >= 0 ? 'minor' : 'major';
+      if(d === 0) return { d:d, v:tonicV, q:q };
+      var best = null;
+      SHAPE_ORDER.forEach(function(n){
+        [false, true].forEach(function(o){
+          var v = voicing(q, n, root, o);
+          if(!v) return;
+          var c = (v.lo + v.hi) / 2;
+          var span = v.hi - v.lo;
+          var score = Math.abs(c - center) + span * .15 + (v.lo < tonicV.lo - 2 ? 2 : 0);
+          if(!best || score < best.score) best = { v:v, score:score };
+        });
+      });
+      return { d:d, v:best.v, q:q };
+    });
+    pos.idx = 0;
+    var flats = !!FLAT_KEYS[key];
+    els.posPrompt.innerHTML = '<em>' + (flats ? FLAT : SHARP)[key] + ' мажор</em> · ' + prog.name;
+    els.posCards.innerHTML = '';
+    pos.chords.forEach(function(c, i){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'prog-card';
+      var root = mod(key + MAJOR[c.d], 12);
+      b.innerHTML = '<div class="rn">' + ROMAN[c.d] + '</div><div class="nm">' + (flats ? FLAT : SHARP)[root] + (c.q === 'minor' ? 'm' : '') + '</div><div class="sh">форма ' + c.v.shape + ' · ' + (c.v.lo === 0 ? 'откр.' : c.v.lo + '–' + c.v.hi) + '</div>';
+      b.addEventListener('click', function(){ pos.idx = i; posDraw(); strum(c.v); });
+      els.posCards.appendChild(b);
+    });
+    posDraw();
+  }
+
+  function scaleInZone(){
+    var key = state.posKey, flats = !!FLAT_KEYS[key];
+    var out = [];
+    for(var s = 0; s < 6; s++){
+      for(var f = pos.zone[0]; f <= pos.zone[1]; f++){
+        var pc = mod(OPEN[s] + f, 12);
+        var d = MAJOR.indexOf(mod(pc - key, 12));
+        if(d < 0) continue;
+        var label = state.labels === 'note' ? noteName(pc, flats) : state.labels === 'none' ? '' : String(d + 1);
+        out.push({ s:s, f:f, role: d === 0 ? 'r' : '', label: label, midi: OPEN[s] + f });
+      }
+    }
+    return out;
+  }
+
+  function chordTonesInZone(c){
+    var third = c.q === 'minor' ? 3 : 4, out = [];
+    for(var s = 0; s < 6; s++) for(var f = pos.zone[0]; f <= pos.zone[1]; f++){
+      var pc = mod(OPEN[s] + f, 12), iv = mod(pc - c.v.rootPc, 12);
+      var role = iv === 0 ? 'r' : iv === third ? 't3' : iv === 7 ? 't5' : null;
+      if(role) out.push({ s:s, f:f, role:role, label: state.labels === 'none' ? '' : state.labels === 'note' ? noteName(pc, !!FLAT_KEYS[state.posKey]) : { r:'1', t3: third === 3 ? '♭3' : '3', t5:'5' }[role] });
+    }
+    return out;
+  }
+  function posDraw(){
+    var c = pos.chords[pos.idx];
+    var scale = els.posScaleToggle.checked ? scaleInZone() : [];
+    var zoneV = { lo: pos.zone[0], hi: pos.zone[1] };
+    var view = state.posView;
+    var dots = [];
+    if(view === 'arp' || view === 'guide'){
+      chordTonesInZone(c).forEach(function(d){
+        dots.push({ s:d.s, f:d.f, cls: d.role + (view === 'guide' && d.role !== 't3' ? ' dim' : ''), label:d.label });
+      });
+      if(view === 'guide' && pos.lastBeat){
+        var n = pos.chords[(pos.idx + 1) % pos.chords.length];
+        chordTonesInZone(n).forEach(function(d){ if(d.role === 't3') dots.push({ s:d.s, f:d.f, cls:'target', r:16 }); });
+      }
+    }
+    drawBoard(els.posBoard, {
+      scale: scale,
+      voicings: view === 'voicing' ? [{ v:c.v, showMutes:true }] : [],
+      dots: dots,
+      regions: [{ v:zoneV, label:'позиция', active:false }]
+    });
+    els.posGuideHint.hidden = view !== 'guide';
+    Array.prototype.forEach.call(els.posViewGroup.children, function(b){ b.classList.toggle('active', b.dataset.view === view); });
+    Array.prototype.forEach.call(els.posCards.children, function(b, i){ b.classList.toggle('active', i === pos.idx); });
+  }
+
+  function posPlay(){
+    if(pos.playing){ posStop(); return; }
+    pos.playing = true;
+    els.posPlayBtn.textContent = 'Стоп';
+    var ev = [], b = beat(), bar = b * 4;
+    pos.chords.forEach(function(c, i){
+      var t = i * bar;
+      var midi = voicingMidi(c.v);
+      ev.push({ time: t, dur: b * 1.9, inst: state.inst, midi: midi, vel:.62, onStart: function(){ pos.idx = i; pos.lastBeat = false; posDraw(); } });
+      ev.push({ time: t + b * 3, dur: .01, midi: [], onStart: function(){ if(state.posView === 'guide'){ pos.lastBeat = true; posDraw(); } } });
+      ev.push({ time: t + b * 2, dur: b * .9, inst: state.inst, midi: midi, vel:.45 });
+      ev.push({ time: t + b * 3, dur: b * .9, inst: state.inst, midi: midi, vel:.5 });
+    });
+    // onEnd срабатывает после последнего события; хвост подгоняет его ровно к концу последнего такта.
+    var lastEnd = (pos.chords.length - 1) * bar + b * 3.9;
+    EarAudio.play(ev, { tail: pos.chords.length * bar - lastEnd, onEnd: function(){ if(pos.playing){ pos.playing = false; posPlay(); } } });
+  }
+  function posStop(){
+    pos.playing = false; pos.lastBeat = false;
+    els.posPlayBtn.textContent = 'Играть по кругу';
+    EarAudio.stop();
+  }
+
+  function posScalePlay(){
+    posStop();
+    var notes = scaleInZone();
+    var seen = {}, seq = [];
+    notes.sort(function(a, b){ return a.midi - b.midi || b.s - a.s; });
+    notes.forEach(function(n){ if(!seen[n.midi]){ seen[n.midi] = true; seq.push(n); } });
+    var full = seq.concat(seq.slice(0, -1).reverse());
+    var step = beat() / 2, ev = [];
+    full.forEach(function(n, i){
+      ev.push({ time: i * step, dur: step * 1.3, inst: state.inst, midi:[n.midi], vel:.65, strum:0, onStart: function(){
+        var o = {}; o[n.s + ':' + n.f] = true;
+        drawBoard(els.posBoard, { scale: scaleInZone().map(function(d){ return d.s === n.s && d.f === n.f ? { s:d.s, f:d.f, role:'r playing', label:d.label } : d; }), regions:[{ v:{ lo:pos.zone[0], hi:pos.zone[1] }, label:'позиция', active:true }] });
+      }});
+    });
+    EarAudio.play(ev, { tail:.3, onEnd: posDraw });
+  }
+
+  // ---------- Арпеджио и гаммы в форме ----------
+  var ARP_STEPS = { major:{ scale:[0,2,4,5,7,9,11], pent:[0,2,4,7,9] }, minor:{ scale:[0,2,3,5,7,8,10], pent:[0,3,5,7,10] } };
+  var IVL = ['1','♭2','2','♭3','3','4','♭5','5','♭6','6','♭7','7'];
+  var arp = { list:[], idx:0 };
+  function arpBuild(){
+    arp.list = neckWalk(state.quality, state.arpRoot);
+    var want = arp.list.findIndex(function(v){ return v.shape === state.arpShape; });
+    arp.idx = want >= 0 ? want : 0;
+    els.arpSteps.innerHTML = '';
+    arp.list.forEach(function(v, i){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = v.shape + '<small>' + (v.lo === 0 ? 'откр.' : v.lo + '–' + v.hi) + '</small>';
+      b.addEventListener('click', function(){ arp.idx = i; state.arpShape = v.shape; save(); arpDraw(); });
+      els.arpSteps.appendChild(b);
+    });
+    arpDraw();
+  }
+  function arpZone(v){ return [Math.max(0, v.lo - 1), Math.min(MAX_FRET, v.hi + 1)]; }
+  function arpNotes(){
+    var v = arp.list[arp.idx], z = arpZone(v);
+    var third = state.quality === 'minor' ? 3 : 4;
+    var chord = [0, third, 7];
+    var set = state.arpView === 'arp' ? chord : ARP_STEPS[state.quality][state.arpView];
+    var out = [];
+    for(var s = 0; s < 6; s++) for(var f = z[0]; f <= z[1]; f++){
+      var iv = mod(OPEN[s] + f - v.rootPc, 12);
+      if(set.indexOf(iv) < 0) continue;
+      var role = iv === 0 ? 'r' : iv === third ? 't3' : iv === 7 ? 't5' : 'scale';
+      var label = state.labels === 'none' ? '' : state.labels === 'note' ? noteName(mod(OPEN[s] + f, 12), !!FLAT_KEYS[v.rootPc]) : IVL[iv];
+      out.push({ s:s, f:f, midi:OPEN[s] + f, cls:role, label:label });
+    }
+    return out;
+  }
+  function arpDraw(playing){
+    var v = arp.list[arp.idx], z = arpZone(v);
+    var dots = arpNotes().map(function(d){ return { s:d.s, f:d.f, cls:d.cls + (playing && playing.s === d.s && playing.f === d.f ? ' playing' : ''), label:d.label }; });
+    var what = { arp:'арпеджио', pent:'пентатоника', scale:'гамма' }[state.arpView];
+    els.arpPrompt.innerHTML = '<em>' + chordLabel(v.rootPc, state.quality) + '</em>: ' + what + ' в форме ' + v.shape;
+    els.arpSub.textContent = state.arpView === 'arp'
+      ? 'Только звуки аккорда в зоне формы — играйте их по одному, вверх и вниз'
+      : 'Цветные — звуки аккорда внутри гаммы: на них удобно заканчивать фразы';
+    drawBoard(els.arpBoard, { dots:dots, regions:[{ v:{ lo:z[0], hi:z[1] }, label:'форма ' + v.shape, active:true }] });
+    Array.prototype.forEach.call(els.arpSteps.children, function(b, i){ b.classList.toggle('active', i === arp.idx); });
+    Array.prototype.forEach.call(els.arpViewGroup.children, function(b){ b.classList.toggle('active', b.dataset.view === state.arpView); });
+  }
+  function arpPlay(){
+    var notes = arpNotes(), seen = {}, seq = [];
+    notes.sort(function(a, b){ return a.midi - b.midi || b.s - a.s; });
+    notes.forEach(function(n){ if(!seen[n.midi]){ seen[n.midi] = true; seq.push(n); } });
+    var full = seq.concat(seq.slice(0, -1).reverse());
+    var step = beat() / 2, ev = [];
+    full.forEach(function(n, i){
+      ev.push({ time:i * step, dur:step * 1.4, inst:state.inst, midi:[n.midi], vel:n.cls === 'scale' ? .55 : .7, strum:0, onStart:function(){ arpDraw(n); } });
+    });
+    EarAudio.play(ev, { tail:.3, onEnd:function(){ arpDraw(); } });
+  }
+
+  // ---------- общее UI ----------
+  var els = {};
+  ['findPrompt','findSub','findBoard','findRevealBtn','findGrade','findPlayBtn','findNextBtn','findScore',
+   'walkPrompt','walkSteps','walkBoard','walkPrevBtn','walkPlayBtn','walkNextBtn','walkAllToggle','walkRoot','walkRandomBtn',
+   'degPrompt','degBoard','degFeedback','degAnswers','degThirdSym','degPlayBtn','degNextBtn','degScore','degStreak',
+   'posPrompt','posSub','posCards','posBoard','posPlayBtn','posScaleBtn','posScaleToggle','posDroneToggle','posKey','posShape','posProg',
+   'posViewGroup','posGuideHint','arpPrompt','arpSub','arpSteps','arpBoard','arpPlayBtn','arpChordBtn','arpViewGroup','arpRoot',
+   'qualityGroup','shapeChecks','labelSelect','autoRevealSelect','tempoSlider','tempoValue','instSelect','audioStatus'
+  ].forEach(function(id){ els[id] = document.getElementById(id); });
+  var tabButtons = Array.prototype.slice.call(document.querySelectorAll('.tabs button'));
+
+  function setFeedback(el, text, cls){ el.textContent = text; el.className = 'feedback' + (cls ? ' ' + cls : ''); }
+  function updateScores(){
+    els.findScore.textContent = state.findGood + ' из ' + state.findTotal;
+    els.degScore.textContent = state.degCorrect + ' из ' + state.degTotal;
+    els.degStreak.textContent = state.degStreak;
+  }
+
+  function showTab(tab){
+    state.tab = tab; save();
+    EarAudio.stop(); walk.playing = false; pos.playing = false;
+    els.walkPlayBtn.textContent = 'Сыграть по грифу';
+    els.posPlayBtn.textContent = 'Играть по кругу';
+    tabButtons.forEach(function(b){
+      var on = b.dataset.tab === tab;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    ['find','walk','degrees','arp','position'].forEach(function(t){ document.getElementById('panel-' + t).hidden = t !== tab; });
+    if(tab !== 'position' && EarAudio.isDroneOn()){ EarAudio.drone(null); els.posDroneToggle.checked = false; }
+  }
+
+  tabButtons.forEach(function(b){ b.addEventListener('click', function(){ showTab(b.dataset.tab); }); });
+
+  // 1
+  els.findRevealBtn.addEventListener('click', findReveal);
+  els.findNextBtn.addEventListener('click', findNew);
+  els.findPlayBtn.addEventListener('click', function(){ if(find.v) strum(find.v); });
+  Array.prototype.forEach.call(els.findGrade.children, function(b){
+    b.addEventListener('click', function(){ findGrade(b.dataset.grade === '1'); });
+  });
+  // 2
+  els.walkPrevBtn.addEventListener('click', function(){ walk.idx = Math.max(0, walk.idx - 1); walkDraw(); strum(walk.list[walk.idx]); });
+  els.walkNextBtn.addEventListener('click', function(){ walk.idx = Math.min(walk.list.length - 1, walk.idx + 1); walkDraw(); strum(walk.list[walk.idx]); });
+  els.walkPlayBtn.addEventListener('click', walkPlay);
+  els.walkAllToggle.addEventListener('change', function(){ walkDraw(); });
+  els.walkRoot.addEventListener('change', function(){ state.walkRoot = +els.walkRoot.value; walk.idx = 0; save(); walkBuild(); });
+  els.walkRandomBtn.addEventListener('click', function(){
+    var r; do { r = Math.floor(Math.random() * 12); } while(r === state.walkRoot);
+    state.walkRoot = r; els.walkRoot.value = r; walk.idx = 0; save(); walkBuild();
+  });
+  // 3
+  Array.prototype.forEach.call(els.degAnswers.children, function(b){
+    b.addEventListener('click', function(){ degAnswer(+b.dataset.ans); });
+  });
+  els.degNextBtn.addEventListener('click', degNew);
+  els.degPlayBtn.addEventListener('click', degSound);
+  // арпеджио
+  els.arpPlayBtn.addEventListener('click', arpPlay);
+  els.arpChordBtn.addEventListener('click', function(){ strum(arp.list[arp.idx]); });
+  Array.prototype.forEach.call(els.arpViewGroup.children, function(b){
+    b.addEventListener('click', function(){ state.arpView = b.dataset.view; save(); arpDraw(); });
+  });
+  els.arpRoot.addEventListener('change', function(){ state.arpRoot = +els.arpRoot.value; save(); arpBuild(); });
+  Array.prototype.forEach.call(els.posViewGroup.children, function(b){
+    b.addEventListener('click', function(){ state.posView = b.dataset.view; save(); posDraw(); });
+  });
+  // 4
+  els.posPlayBtn.addEventListener('click', posPlay);
+  els.posScaleBtn.addEventListener('click', posScalePlay);
+  els.posScaleToggle.addEventListener('change', function(){ state.posScale = els.posScaleToggle.checked; save(); posDraw(); });
+  els.posDroneToggle.addEventListener('change', function(){
+    EarAudio.drone(els.posDroneToggle.checked ? [36 + state.posKey, 43 + state.posKey] : null);
+  });
+  ['posKey','posShape','posProg'].forEach(function(id){
+    els[id].addEventListener('change', function(){
+      state[id] = id === 'posShape' ? els[id].value : +els[id].value;
+      save(); posStop(); posBuild();
+      if(EarAudio.isDroneOn()) EarAudio.drone([36 + state.posKey, 43 + state.posKey]);
+    });
+  });
+
+  // настройки
+  var qualityButtons = Array.prototype.slice.call(els.qualityGroup.children);
+  qualityButtons.forEach(function(b){
+    b.addEventListener('click', function(){
+      state.quality = b.dataset.quality; save();
+      qualityButtons.forEach(function(x){ x.classList.toggle('active', x === b); });
+      findNew(); walkBuild(); degNew(); arpBuild();
+    });
+  });
+  SHAPE_ORDER.forEach(function(n){
+    var lab = document.createElement('label');
+    lab.innerHTML = '<input type="checkbox" data-shape="' + n + '"> ' + n;
+    var inp = lab.firstChild;
+    inp.checked = !!state.shapes[n];
+    inp.addEventListener('change', function(){ state.shapes[n] = inp.checked; save(); });
+    els.shapeChecks.appendChild(lab);
+  });
+  els.labelSelect.addEventListener('change', function(){
+    state.labels = els.labelSelect.value; save();
+    if(find.revealed){ find.revealed = false; findReveal(); }
+    walkDraw(); posDraw(); arpDraw();
+    if(deg.answered){
+      drawBoard(els.degBoard, { voicings:[{ v:deg.v, showMutes:true }], regions:[{ v:deg.v, label:'форма ' + deg.v.shape, active:false }] });
+    }
+  });
+  els.autoRevealSelect.addEventListener('change', function(){ state.autoReveal = +els.autoRevealSelect.value; save(); });
+  els.tempoSlider.addEventListener('input', function(){
+    state.tempo = +els.tempoSlider.value;
+    els.tempoValue.textContent = state.tempo + ' уд/мин';
+    save();
+  });
+  els.instSelect.addEventListener('change', function(){ state.inst = els.instSelect.value; save(); EarAudio.load(state.inst); });
+
+  document.addEventListener('keydown', function(e){
+    var tag = document.activeElement && document.activeElement.tagName;
+    if(tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    var isNext = /^[nNтТ]$/.test(e.key) || e.key === 'Enter';
+    if(state.tab === 'find'){
+      if(e.key === ' '){ e.preventDefault(); if(!find.revealed) findReveal(); else strum(find.v); }
+      else if(isNext) findNew();
+    } else if(state.tab === 'degrees'){
+      if(e.key === '1') degAnswer(0);
+      else if(e.key === '3') degAnswer(1);
+      else if(e.key === '5') degAnswer(2);
+      else if(e.key === ' '){ e.preventDefault(); degSound(); }
+      else if(isNext && deg.answered) degNew();
+    } else if(state.tab === 'walk'){
+      if(e.key === 'ArrowRight') els.walkNextBtn.click();
+      else if(e.key === 'ArrowLeft') els.walkPrevBtn.click();
+      else if(e.key === ' '){ e.preventDefault(); walkPlay(); }
+    } else if(state.tab === 'position'){
+      if(e.key === ' '){ e.preventDefault(); posPlay(); }
+    } else if(state.tab === 'arp'){
+      if(e.key === ' '){ e.preventDefault(); arpPlay(); }
+      else if(e.key === 'ArrowRight' && arp.idx < arp.list.length - 1){ arp.idx++; state.arpShape = arp.list[arp.idx].shape; arpDraw(); }
+      else if(e.key === 'ArrowLeft' && arp.idx > 0){ arp.idx--; state.arpShape = arp.list[arp.idx].shape; arpDraw(); }
+    }
+  });
+
+  EarAudio.onStatus(function(text){ els.audioStatus.textContent = text; els.audioStatus.hidden = !text; });
+
+  // ---------- старт ----------
+  function fillSelects(){
+    els.walkRoot.innerHTML = '';
+    CHORD_ROOTS.forEach(function(n, i){ var o = document.createElement('option'); o.value = i; o.textContent = n; els.walkRoot.appendChild(o); });
+    els.walkRoot.value = state.walkRoot;
+    els.arpRoot.innerHTML = '';
+    CHORD_ROOTS.forEach(function(n, i){ var o = document.createElement('option'); o.value = i; o.textContent = n; els.arpRoot.appendChild(o); });
+    els.arpRoot.value = state.arpRoot;
+    els.posKey.innerHTML = '';
+    CHORD_ROOTS.forEach(function(n, i){ var o = document.createElement('option'); o.value = i; o.textContent = n + ' мажор'; els.posKey.appendChild(o); });
+    els.posKey.value = state.posKey;
+    els.posShape.innerHTML = '';
+    SHAPE_ORDER.forEach(function(n){ var o = document.createElement('option'); o.value = n; o.textContent = n; els.posShape.appendChild(o); });
+    els.posShape.value = state.posShape;
+    els.posProg.innerHTML = '';
+    PROGS.forEach(function(p, i){ var o = document.createElement('option'); o.value = i; o.textContent = p.name; els.posProg.appendChild(o); });
+    els.posProg.value = state.posProg;
+    state.inst = EarAudio.fillSelect(els.instSelect, state.inst);
+    els.labelSelect.value = state.labels;
+    els.autoRevealSelect.value = state.autoReveal;
+    els.tempoSlider.value = state.tempo;
+    els.tempoValue.textContent = state.tempo + ' уд/мин';
+    els.posScaleToggle.checked = state.posScale;
+    qualityButtons.forEach(function(x){ x.classList.toggle('active', x.dataset.quality === state.quality); });
+  }
+
+  window.cagedDebug = { voicing: voicing, neckWalk: neckWalk, state: state, pos: pos };
+
+  load();
+  fillSelects();
+  EarAudio.init([state.inst]);
+  updateScores();
+  findNew();
+  walkBuild();
+  degNew();
+  posBuild();
+  arpBuild();
+  showTab(state.tab);
+})();
+</script>

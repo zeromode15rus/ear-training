@@ -1,0 +1,93 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Слух и гриф — тренажёры</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="ear-theme.js"></script>
+<link rel="stylesheet" href="ear-common.css">
+<link rel="stylesheet" href="ear-kid.css">
+<style>
+  .page{ max-width:760px; }
+  .cards{ display:grid; gap:.8rem; }
+  .card{
+    display:block; text-decoration:none; color:inherit;
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:16px;
+    padding:1.1rem 1.3rem; box-shadow:var(--shadow);
+    transition:border-color .15s ease, transform .1s ease;
+  }
+  .card:hover{ border-color:var(--brass); transform:translateY(-2px); }
+  .card h2{ font-size:1.15rem; font-weight:600; margin-bottom:.25rem; }
+  .card p{ margin:0; font-size:.88rem; color:var(--muted); line-height:1.45; }
+  :root[data-theme="kid"] .card{ border-width:2px; border-radius:26px; }
+  :root[data-theme="kid"] .card h2{ font-size:1.3rem; font-weight:700; }
+  .group{ margin-top:2rem; }
+  .group h3{
+    font-family:var(--font-mono); font-size:.72rem; font-weight:500; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--muted); margin:0 0 .7rem;
+  }
+</style>
+
+<div class="page">
+  <nav class="site-nav" aria-label="Тренажёры">
+    <a href="index.html" aria-current="page">Все</a>
+    <a href="cadence.html">Каданс</a>
+    <a href="solfege.html">Пение с листа</a>
+    <a href="caged.html">CAGED</a>
+    <a href="modes.html">Лады</a>
+    <a href="improv.html">Импровизация</a>
+  </nav>
+
+  <header class="hero">
+    <svg class="staff" viewBox="0 0 200 40" aria-hidden="true">
+      <line x1="4" y1="8" x2="196" y2="8"/><line x1="4" y1="15" x2="196" y2="15"/>
+      <line x1="4" y1="22" x2="196" y2="22"/><line x1="4" y1="29" x2="196" y2="29"/>
+      <line x1="4" y1="36" x2="196" y2="36"/><circle cx="46" cy="22" r="4"/>
+    </svg>
+    <h1>Слух и гриф</h1>
+    <p class="tagline">Домашние тренажёры: функциональный слух, пение с листа, гриф и импровизация</p>
+  </header>
+
+  <main>
+    <div class="cards">
+      <a class="card" href="cadence.html">
+        <h2>Каданс</h2>
+        <p>Узнавать ступень лада на слух, а не просто аккорд. Гамма, тоника — и вопрос.</p>
+      </a>
+      <a class="card" href="solfege.html">
+        <h2>Пение с листа</h2>
+        <p>Мелодии на нотном стане под аккомпанемент — случайные и известные. Можно добавлять свои.</p>
+      </a>
+      <a class="card" href="caged.html">
+        <h2>CAGED на грифе</h2>
+        <p>Пять форм, тоника-терция-квинта и переходы между позициями.</p>
+      </a>
+      <a class="card" href="modes.html">
+        <h2>Лады</h2>
+        <p>Характерные ступени над бурдоном: дорийский, фригийский, лидийский и остальные.</p>
+      </a>
+      <a class="card" href="improv.html">
+        <h2>Импровизация</h2>
+        <p>Игра под квадрат: вопрос-ответ, целевые ноты, фразировка.</p>
+      </a>
+    </div>
+
+    <div class="group">
+      <h3>Ранние, отдельные</h3>
+      <div class="cards">
+        <a class="card" href="ear_trainer.html">
+          <h2>Соло Let Down</h2>
+          <p>Пропеть соло по нотам с проверкой высоты через микрофон.</p>
+        </a>
+        <a class="card" href="theory_trainer.html">
+          <h2>Ступени и аккорды</h2>
+          <p>Теория без звука: какая ступень — какой аккорд.</p>
+        </a>
+      </div>
+    </div>
+
+    <p class="notes">
+      Всё считается в браузере, ничего никуда не отправляется. Настройки и свои мелодии лежат
+      в localStorage этого устройства. Тема переключается кнопкой в шапке — есть детская.
+    </p>
+  </main>
+</div>

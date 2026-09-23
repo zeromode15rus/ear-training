@@ -1,0 +1,1522 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Каданс</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="ear-theme.js"></script>
+<style>
+  :root{
+    --ink:#1b1814;
+    --paper:#fffbf2;
+    --paper-raised:#fbf1dc;
+    --line:#e6d3a6;
+    --muted:#6b604c;
+    --brass:#c27414;
+    --brass-deep:#94550a;
+    --brass-tint:#ffe3ad;
+    --on-brass:#fffaf0;
+    color-scheme:light;
+    --good:#16894a;
+    --good-bg:#d9f5e3;
+    --bad:#d2302a;
+    --bad-bg:#fde0dc;
+    --shadow:0 1px 2px rgba(33,29,26,.08), 0 8px 20px rgba(120,80,20,.10);
+    --tone-r:#d27a0a; --tone-3:#15994f; --tone-5:#2266dd; --tone-7:#a032c8; --tone-char:#e8361c; --tone-x:#8a7f6a;
+    --wood:#f3e2bb; --fret:#c4a36a; --string:#7d6a48; --inlay:#e0c68c; --dot-text:#ffffff;
+    --font-display:'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body:'Karla', 'Segoe UI', system-ui, sans-serif;
+    --font-mono:'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]):not([data-theme="kid"]){
+      --ink:#fbf3e2;
+      --paper:#16120c;
+      --paper-raised:#231b10;
+      --line:#57432a;
+      --muted:#c4b391;
+      --brass:#ffb040;
+      --brass-deep:#ffc870;
+      --brass-tint:#4d3410;
+      --on-brass:#1b1206;
+    color-scheme:dark;
+      --good:#4ee08c;
+      --good-bg:#12351f;
+      --bad:#ff6f66;
+      --bad-bg:#43191a;
+      --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 26px rgba(0,0,0,.45);
+      --tone-r:#ffb03a; --tone-3:#3fe486; --tone-5:#5ca8ff; --tone-7:#dc8cff; --tone-char:#ff5f3d; --tone-x:#a8997a;
+      --wood:#3b2d1b; --fret:#8a6c42; --string:#c9b187; --inlay:#5e4a2c; --dot-text:#14100a;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#fbf3e2;
+    --paper:#16120c;
+    --paper-raised:#231b10;
+    --line:#57432a;
+    --muted:#c4b391;
+    --brass:#ffb040;
+    --brass-deep:#ffc870;
+    --brass-tint:#4d3410;
+    --on-brass:#1b1206;
+    color-scheme:dark;
+    --good:#4ee08c;
+    --good-bg:#12351f;
+    --bad:#ff6f66;
+    --bad-bg:#43191a;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 10px 26px rgba(0,0,0,.45);
+    --tone-r:#ffb03a; --tone-3:#3fe486; --tone-5:#5ca8ff; --tone-7:#dc8cff; --tone-char:#ff5f3d; --tone-x:#a8997a;
+    --wood:#3b2d1b; --fret:#8a6c42; --string:#c9b187; --inlay:#5e4a2c; --dot-text:#14100a;
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{
+    max-width:920px;
+    margin:0 auto;
+    padding-inline:20px;
+    padding-block:32px 48px;
+  }
+  h1,h2{ font-family:var(--font-display); margin:0; text-wrap:balance; }
+  button{ font-family:inherit; }
+  :focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+
+  .hero{ text-align:center; margin-bottom:2.25rem; }
+  .staff{ width:200px; max-width:60%; height:auto; margin:0 auto 1rem; display:block; }
+  .staff line{ stroke:var(--line); stroke-width:1.4; stroke-linecap:round; }
+  .staff circle{ fill:var(--brass); }
+  .hero h1{ font-size:clamp(2rem, 5vw, 2.6rem); font-weight:600; letter-spacing:.01em; }
+  .tagline{ margin:.5rem 0 0; color:var(--muted); font-size:.95rem; }
+
+  .layout{
+    display:grid;
+    grid-template-columns:1fr 300px;
+    gap:2rem;
+    align-items:start;
+  }
+  @media (max-width:760px){
+    .layout{ grid-template-columns:1fr; }
+  }
+
+  .trainer{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:1.75rem;
+    box-shadow:var(--shadow);
+  }
+
+  .tabs{
+    display:flex;
+    border:1px solid var(--line);
+    border-radius:999px;
+    overflow:hidden;
+    margin-bottom:1.5rem;
+  }
+  .tabs button{
+    flex:1;
+    padding:.6rem 0;
+    border:none;
+    background:var(--paper);
+    color:var(--muted);
+    font-size:.9rem;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .tabs button.active{ background:var(--brass); color:var(--on-brass); }
+
+  .context-bar{
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    flex-wrap:wrap;
+    font-family:var(--font-mono);
+    font-size:.75rem;
+    letter-spacing:.03em;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin-bottom:1.5rem;
+  }
+  #keyReadout{ color:var(--brass-deep); font-weight:500; }
+  #levelReadout{ text-transform:none; }   /* регистр важен: ii — минор, II — мажор */
+
+  .stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:.75rem;
+    margin-bottom:1.5rem;
+  }
+  .play-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:.6rem;
+    padding:.9rem 1.75rem;
+    border:none;
+    border-radius:999px;
+    background:var(--brass);
+    color:var(--on-brass);
+    font-size:1rem;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    transition:background .15s ease, transform .15s ease;
+  }
+  .play-btn:hover{ background:var(--brass-deep); transform:translateY(-1px); }
+  .play-btn:active{ transform:translateY(0); }
+  .play-btn svg{ width:16px; height:16px; fill:currentColor; }
+
+  .ghost-btn{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--muted);
+    padding:.5rem 1.1rem;
+    border-radius:999px;
+    font-size:.85rem;
+    cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .ghost-btn:hover{ border-color:var(--brass); color:var(--brass-deep); }
+
+  .feedback{
+    min-height:2.4rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:.95rem;
+    font-weight:600;
+    border-radius:10px;
+    padding:0 .75rem;
+    margin-bottom:1.25rem;
+    color:var(--muted);
+  }
+  .feedback.good{ background:var(--good-bg); color:var(--good); }
+  .feedback.bad{ background:var(--bad-bg); color:var(--bad); }
+
+  .degrees{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.6rem;
+    justify-content:center;
+    margin-bottom:1.25rem;
+  }
+  .degree-tile{
+    flex:1 1 64px;
+    max-width:88px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:.15rem;
+    padding:.85rem .5rem .65rem;
+    background:var(--paper);
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .degree-tile:hover:not(:disabled){ border-color:var(--brass); transform:translateY(-2px); }
+  .degree-tile:disabled{ cursor:default; }
+  .degree-tile .roman{ font-family:var(--font-display); font-size:1.5rem; font-weight:600; line-height:1; }
+  .degree-tile .chordname{ font-family:var(--font-mono); font-size:.68rem; color:var(--muted); }
+  .degree-tile.is-correct{ background:var(--good-bg); border-color:var(--good); }
+  .degree-tile.is-correct .roman{ color:var(--good); }
+  .degree-tile.is-wrong{ background:var(--bad-bg); border-color:var(--bad); }
+  .degree-tile.is-wrong .roman{ color:var(--bad); }
+  .degrees.sevenths .degree-tile{ max-width:118px; flex-basis:88px; }
+  .degrees.sevenths .roman{ font-size:1.1rem; letter-spacing:-0.01em; }
+  .degrees.sevenths .chordname{ font-size:.62rem; }
+  @media (prefers-reduced-motion: no-preference){
+    .degree-tile.is-wrong{ animation:shake .3s ease; }
+  }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-3px); }
+    75%{ transform:translateX(3px); }
+  }
+
+  .slots{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.5rem;
+    justify-content:center;
+    margin-bottom:1.25rem;
+  }
+  .slot{
+    min-width:72px;
+    padding:.55rem .5rem;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:.1rem;
+    border:1.5px dashed var(--line);
+    border-radius:10px;
+    background:var(--paper);
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .slot-mark{ font-family:var(--font-mono); font-size:.62rem; color:var(--muted); }
+  .slot-sym{ font-family:var(--font-display); font-size:1.15rem; font-weight:600; min-height:1.3em; }
+  .slot-name{ font-family:var(--font-mono); font-size:.62rem; color:var(--muted); min-height:1em; }
+  .slot-correct{ display:block; font-family:var(--font-mono); font-size:.62rem; color:var(--good); margin-top:.2rem; }
+  .slot.is-current{ border-style:solid; border-color:var(--brass); box-shadow:0 0 0 3px var(--brass-tint); }
+  .slot.is-correct{ border-style:solid; border-color:var(--good); background:var(--good-bg); }
+  .slot.is-correct .slot-sym{ color:var(--good); }
+  .slot.is-wrong{ border-style:solid; border-color:var(--bad); background:var(--bad-bg); }
+  .slot.is-wrong .slot-sym{ color:var(--bad); }
+
+  .prog-name{
+    text-align:center;
+    font-size:.85rem;
+    font-style:italic;
+    color:var(--brass-deep);
+    margin:-.5rem 0 1.25rem;
+  }
+
+  .next-btn{
+    display:block;
+    margin:0 auto;
+    background:transparent;
+    border:1.5px solid var(--brass);
+    color:var(--brass-deep);
+    padding:.6rem 1.4rem;
+    border-radius:999px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .next-btn:hover{ background:var(--brass); color:var(--on-brass); }
+
+  .settings{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:1.5rem;
+    display:flex;
+    flex-direction:column;
+    gap:1.1rem;
+    box-shadow:var(--shadow);
+  }
+  @media (min-width:761px){
+    .settings{ position:sticky; top:calc(env(safe-area-inset-top,0px) + 16px); }
+  }
+  .settings h2{ font-size:1.1rem; font-weight:600; margin-bottom:.15rem; }
+  .settings label{ display:flex; flex-direction:column; gap:.35rem; font-size:.85rem; color:var(--muted); }
+  .settings select, .settings input[type="range"]{ font-family:var(--font-body); }
+  select{
+    font-size:.95rem;
+    color:var(--ink);
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:.5rem .6rem;
+  }
+  input[type="range"]{ accent-color:var(--brass); width:100%; }
+
+  .mode-toggle{
+    display:flex;
+    border:1px solid var(--line);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .mode-toggle button{
+    flex:1;
+    padding:.5rem 0;
+    border:none;
+    background:var(--paper);
+    color:var(--muted);
+    font-size:.85rem;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .mode-toggle button.active{ background:var(--brass); color:var(--on-brass); }
+  .mode-toggle.is-disabled{ opacity:.5; }
+  .mode-toggle button:disabled{ cursor:not-allowed; }
+
+  .checkbox{
+    flex-direction:row !important;
+    align-items:center;
+    gap:.55rem !important;
+    font-size:.85rem;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .checkbox input{ accent-color:var(--brass); width:16px; height:16px; flex:none; }
+
+  .level-caption{
+    font-family:var(--font-mono);
+    font-size:.78rem;
+    color:var(--brass-deep);
+    margin-top:-.5rem;
+  }
+
+  .stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:.6rem;
+  }
+  .stat{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:.6rem;
+    text-align:center;
+  }
+  .stat-value{
+    display:block;
+    font-family:var(--font-mono);
+    font-variant-numeric:tabular-nums;
+    font-size:1.25rem;
+    font-weight:500;
+    color:var(--brass-deep);
+  }
+  .stat-label{ font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+
+  .reset-btn{
+    background:transparent;
+    border:none;
+    color:var(--muted);
+    font-size:.78rem;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:0;
+    align-self:flex-start;
+  }
+  .reset-btn:hover{ color:var(--bad); }
+
+  .ghost-btn.active{ background:var(--brass); border-color:var(--brass); color:var(--on-brass); }
+
+  .theory{
+    margin-top:2rem;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:1.5rem 1.75rem;
+    box-shadow:var(--shadow);
+  }
+  .theory-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    flex-wrap:wrap;
+    margin-bottom:1rem;
+  }
+  .theory-head h2{ font-size:1.05rem; font-weight:600; }
+  .theory-head h2 span{ color:var(--brass-deep); }
+  .theory-table-wrap{ overflow-x:auto; }
+  .theory-table{
+    width:100%;
+    min-width:640px;
+    border-collapse:collapse;
+    font-size:.85rem;
+  }
+  .theory-table th, .theory-table td{
+    text-align:left;
+    padding:.5rem .6rem;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  .theory-table th{
+    font-family:var(--font-mono);
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:var(--muted);
+    font-weight:500;
+  }
+  .theory-table td:first-child{ font-family:var(--font-display); font-weight:600; font-size:1rem; }
+  .theory-table td:nth-child(3), .theory-table td:nth-child(4){ font-family:var(--font-mono); font-size:.8rem; color:var(--muted); }
+  .theory-table tbody tr:last-child td{ border-bottom:none; }
+  .theory-note{ margin:.9rem 0 0; font-size:.78rem; color:var(--muted); }
+
+  .site-nav{ display:flex; flex-wrap:wrap; gap:.4rem; justify-content:center; margin-bottom:1.5rem; }
+  .site-nav a{ font-size:.8rem; color:var(--muted); text-decoration:none; padding:.35rem .8rem; border:1px solid var(--line); border-radius:999px; }
+  .site-nav a:hover{ border-color:var(--brass); color:var(--brass-deep); }
+  .site-nav a[aria-current="page"]{ background:var(--brass); border-color:var(--brass); color:var(--on-brass); }
+  .theme-btn{
+    font:inherit; font-size:.8rem; color:var(--muted); background:transparent; cursor:pointer;
+    padding:.35rem .8rem; border:1px dashed var(--line); border-radius:999px;
+  }
+  .theme-btn:hover{ border-color:var(--brass); color:var(--brass-deep); }
+
+  .notes{
+    max-width:640px;
+    margin:2rem auto 0;
+    text-align:center;
+    color:var(--muted);
+    font-size:.83rem;
+    line-height:1.5;
+  }
+</style>
+<link rel="stylesheet" href="ear-kid.css">
+
+<div class="page">
+  <nav class="site-nav" aria-label="Тренажёры">
+    <a href="cadence.html" aria-current="page">Каданс</a>
+    <a href="solfege.html">Пение с листа</a>
+    <a href="caged.html">CAGED</a>
+    <a href="modes.html">Лады</a>
+    <a href="improv.html">Импровизация</a>
+  </nav>
+
+  <header class="hero">
+    <svg class="staff" viewBox="0 0 200 40" aria-hidden="true">
+      <line x1="0" y1="4" x2="200" y2="4"></line>
+      <line x1="0" y1="12" x2="200" y2="12"></line>
+      <line x1="0" y1="20" x2="200" y2="20"></line>
+      <line x1="0" y1="28" x2="200" y2="28"></line>
+      <line x1="0" y1="36" x2="200" y2="36"></line>
+      <circle cx="22" cy="20" r="4"></circle>
+    </svg>
+    <h1>Каданс</h1>
+    <p class="tagline">Функциональный слух для аккордов — узнавайте ступень лада, а не просто аккорд</p>
+  </header>
+
+  <main class="layout">
+    <section class="trainer" aria-label="Тренажёр">
+      <div class="tabs" role="tablist" aria-label="Режим тренировки">
+        <button type="button" class="active" data-tab="chords" role="tab" aria-selected="true">Аккорды</button>
+        <button type="button" data-tab="progressions" role="tab" aria-selected="false">Последовательности</button>
+      </div>
+
+      <div class="context-bar">
+        <span id="keyReadout">До мажор</span>
+        <span id="levelReadout">Уровень 2 · I · IV · V</span>
+      </div>
+
+      <div id="panelChords" class="tab-panel">
+        <div class="stage">
+          <button class="play-btn" id="playChordBtn" type="button">
+            <svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"></path></svg>
+            <span>Играть аккорд</span>
+          </button>
+          <button class="ghost-btn" id="playTonicBtn" type="button">Повторить тонику</button>
+        </div>
+
+        <div class="feedback" id="feedback" role="status" aria-live="polite">Нажмите «Играть аккорд», чтобы начать</div>
+
+        <div class="degrees" id="degreeGrid"></div>
+
+        <button class="next-btn" id="nextBtn" type="button" hidden>Следующий аккорд →</button>
+      </div>
+
+      <div id="panelProgressions" class="tab-panel" hidden>
+        <div class="stage">
+          <button class="play-btn" id="progPlayBtn" type="button">
+            <svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"></path></svg>
+            <span>Играть последовательность</span>
+          </button>
+          <button class="ghost-btn" id="progTonicBtn" type="button">Повторить тонику</button>
+        </div>
+
+        <div class="feedback" id="progFeedback" role="status" aria-live="polite">Нажмите «Играть последовательность», чтобы начать</div>
+
+        <div class="slots" id="progSlots"></div>
+
+        <div class="degrees" id="progDegreeGrid"></div>
+
+        <p class="prog-name" id="progName" hidden></p>
+
+        <button class="next-btn" id="progNextBtn" type="button" hidden>Следующая последовательность →</button>
+      </div>
+    </section>
+
+    <aside class="settings" aria-label="Настройки">
+      <h2>Настройки</h2>
+
+      <label for="rootSelect">Тональность
+        <select id="rootSelect"></select>
+      </label>
+
+      <label for="instrumentSelect">Инструмент
+        <select id="instrumentSelect"></select>
+      </label>
+      <div class="level-caption" id="instrumentStatus" hidden></div>
+
+      <label class="checkbox">
+        <input type="checkbox" id="randomKeyToggle">
+        Новая тональность в каждом вопросе
+      </label>
+
+      <div>
+        <div class="mode-toggle" role="group" aria-label="Лад">
+          <button type="button" data-mode="major" class="active">Мажор</button>
+          <button type="button" data-mode="minor">Минор</button>
+        </div>
+      </div>
+
+      <label class="checkbox" id="harmonicRow" hidden>
+        <input type="checkbox" id="harmonicToggle" checked>
+        Гармонический вид (V — мажорная доминанта)
+      </label>
+
+      <div>
+        <div class="mode-toggle" role="group" aria-label="Тип аккорда">
+          <button type="button" data-seventh="false" class="active">Трезвучия</button>
+          <button type="button" data-seventh="true">Септаккорды</button>
+        </div>
+      </div>
+
+      <label for="levelSlider"><span>Уровень: <span id="levelValue">2</span> из 6</span></label>
+      <input type="range" id="levelSlider" min="1" max="6" value="2" step="1">
+      <div class="level-caption" id="levelCaption">I · IV · V</div>
+
+      <label class="checkbox">
+        <input type="checkbox" id="autoTonicToggle" checked>
+        Играть тонику перед аккордом
+      </label>
+
+      <label class="checkbox">
+        <input type="checkbox" id="walkdownToggle" checked>
+        После ответа спускаться аккордами к тонике
+      </label>
+
+      <div>
+        <span style="display:block; font-size:.85rem; color:var(--muted); margin-bottom:.35rem;">Порядок звучания</span>
+        <div class="mode-toggle" role="group" aria-label="Порядок звучания" id="orderToggleGroup">
+          <button type="button" data-order="forward" class="active">Тоника первой</button>
+          <button type="button" data-order="backward">Тоника последней</button>
+          <button type="button" data-order="random">Вперемешку</button>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span class="stat-value" id="statCorrect">0</span><span class="stat-label">верно</span></div>
+        <div class="stat"><span class="stat-value" id="statTotal">0</span><span class="stat-label">всего</span></div>
+        <div class="stat"><span class="stat-value" id="statStreak">0</span><span class="stat-label">серия</span></div>
+        <div class="stat"><span class="stat-value" id="statBest">0</span><span class="stat-label">рекорд</span></div>
+      </div>
+      <button class="reset-btn" id="resetStatsBtn" type="button">Сбросить статистику</button>
+    </aside>
+  </main>
+
+  <section class="theory" aria-label="Справка по ступеням тональности">
+    <div class="theory-head">
+      <h2>Справка: <span id="theoryKey">До мажор</span></h2>
+      <button type="button" class="ghost-btn" id="droneBtn">Держать тонику ♪</button>
+    </div>
+    <div class="theory-table-wrap">
+      <table class="theory-table">
+        <thead><tr><th>Ступень</th><th>Аккорд</th><th>Ноты</th><th>Формула</th><th>Лад (как тоника)</th></tr></thead>
+        <tbody id="theoryBody"></tbody>
+      </table>
+    </div>
+    <p class="theory-note">VIII — та же тоника октавой выше: после ответа в режиме «Аккорды» разбор идёт к ближайшей тонике — вниз к I, если ступень ближе к началу, или вверх к VIII, если ближе к октаве. Нажмите «Держать тонику», чтобы получить дрон (тоника + квинта) и попеть аккорды из таблицы поверх него.</p>
+  </section>
+
+  <footer class="notes">
+    <p>Сначала быстро звучит гамма, затем тоника — опорный аккорд тональности (порядок можно поменять в настройках). В режиме «Аккорды» определите функцию одного случайного аккорда; в режиме «Последовательности» — функцию каждого аккорда в реальном гармоническом обороте по порядку, с примером песни в конце. На каждой плашке под функцией подписано её название на грифе (например, Am, G7). Заглавная буква — мажорное трезвучие, строчная — минорное, «°» — уменьшённое; в септаккордах: maj7 — большой мажорный, 7 — малый (минорный или доминантовый), ø7 — полууменьшённый. Уровень 6 включает все семь ступеней лада.</p>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var NOTE_NAMES_RU = ['До','До♯','Ре','Ре♯','Ми','Фа','Фа♯','Соль','Соль♯','Ля','Ля♯','Си'];
+
+  var MAJOR_DEGREES = [
+    {base:'I',   num:1, offset:0,  triad:'maj', seventh:'maj7'},
+    {base:'ii',  num:2, offset:2,  triad:'min', seventh:'min7'},
+    {base:'iii', num:3, offset:4,  triad:'min', seventh:'min7'},
+    {base:'IV',  num:4, offset:5,  triad:'maj', seventh:'maj7'},
+    {base:'V',   num:5, offset:7,  triad:'maj', seventh:'dom7'},
+    {base:'vi',  num:6, offset:9,  triad:'min', seventh:'min7'},
+    {base:'vii', num:7, offset:11, triad:'dim', seventh:'halfdim7'}
+  ];
+
+  function minorDegrees(harmonic){
+    return [
+      {base:'i',   num:1, offset:0,  triad:'min', seventh:'min7'},
+      {base:'ii',  num:2, offset:2,  triad:'dim', seventh:'halfdim7'},
+      {base:'III', num:3, offset:3,  triad:'maj', seventh:'maj7'},
+      {base:'iv',  num:4, offset:5,  triad:'min', seventh:'min7'},
+      {base: harmonic ? 'V' : 'v', num:5, offset:7,
+        triad: harmonic ? 'maj' : 'min', seventh: harmonic ? 'dom7' : 'min7'},
+      {base:'VI',  num:6, offset:8,  triad:'maj', seventh:'maj7'},
+      {base:'VII', num:7, offset:10, triad:'maj', seventh:'dom7'}
+    ];
+  }
+
+  var LEVELS = [
+    [0,4],
+    [0,3,4],
+    [0,1,3,4],
+    [0,1,3,4,5],
+    [0,1,2,3,4,5],
+    [0,1,2,3,4,5,6]
+  ];
+
+  var TRIAD_INTERVALS = { maj:[0,4,7], min:[0,3,7], dim:[0,3,6] };
+  var SEVENTH_INTERVALS = { maj7:[0,4,7,11], min7:[0,3,7,10], dom7:[0,4,7,10], halfdim7:[0,3,6,10] };
+  var NOTE_NAMES_LETTER = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  var TRIAD_SUFFIX = { maj:'', min:'m', dim:'dim' };
+  var SEVENTH_SUFFIX = { maj7:'maj7', min7:'m7', dom7:'7', halfdim7:'m7b5' };
+  var TRIAD_FORMULA = { maj:'1–3–5', min:'1–♭3–5', dim:'1–♭3–♭5' };
+  var SEVENTH_FORMULA = { maj7:'1–3–5–7', min7:'1–♭3–5–♭7', dom7:'1–3–5–♭7', halfdim7:'1–♭3–♭5–♭7' };
+  var TRIAD_STEPS = { maj:'4-3', min:'3-4', dim:'3-3' };
+  var SEVENTH_STEPS = { maj7:'4-3-4', min7:'3-4-3', dom7:'4-3-3', halfdim7:'3-3-4' };
+  var MODE_NAMES = ['Ионийский', 'Дорийский', 'Фригийский', 'Лидийский', 'Миксолидийский', 'Эолийский', 'Локрийский'];
+  var MODE_STEPS = ['2-2-1-2-2-2-1', '2-1-2-2-2-1-2', '1-2-2-2-1-2-2', '2-2-2-1-2-2-1', '2-2-1-2-2-1-2', '2-1-2-2-1-2-2', '1-2-2-1-2-2-2'];
+  var MAJOR_MODE_IDX = [0, 1, 2, 3, 4, 5, 6];
+  var MINOR_MODE_IDX = [5, 6, 0, 1, 2, 3, 4];
+
+  var MAJOR_PROGRESSIONS = [
+    {idx:[0,4,0],       name:'Тоника и доминанта',       song:'основа многих народных и детских песен'},
+    {idx:[0,3,4,0],     name:'Классическая каденция',     song:'La Bamba — Ritchie Valens'},
+    {idx:[1,4,0],       name:'Джазовый оборот ii–V–I',    song:'Autumn Leaves — джазовый стандарт'},
+    {idx:[0,4,5,3],     name:'Поп-квадрат',               song:'Let It Be — The Beatles'},
+    {idx:[5,3,0,4],     name:'Поп-квадрат от vi',         song:'Poker Face — Lady Gaga'},
+    {idx:[0,5,3,4],     name:'Баллада 50-х',              song:'Stand By Me — Ben E. King'},
+    {idx:[0,3,4,5],     name:'Обманчивая каденция',       song:'частый приём в хоралах Баха'},
+    {idx:[0,5,1,4],     name:'Оборот I–vi–ii–V',          song:'Blue Moon — Rodgers & Hart'},
+    {idx:[0,2,3,4],     name:'С проходящей iii ступенью', song:'встречается как связка I→IV в балладах'},
+    {idx:[4,6,0],       name:'Вводный тон vii°→I',        song:'классический кадансовый оборот'}
+  ];
+
+  var MINOR_PROGRESSIONS = [
+    {idx:[0,4,0],       name:'Тоника и доминанта',        song:'основа минорных народных мотивов'},
+    {idx:[0,3,4,0],     name:'Минорная каденция',         song:'Greensleeves — английская народная'},
+    {idx:[0,1,4,0],     name:'С уменьшённым ii°',         song:'типично для Баха и Вивальди'},
+    {idx:[0,5,3,4],     name:'Минорная баллада',          song:'в духе рок-баллад 80-х'},
+    {idx:[0,2,3,4],     name:'С параллельным мажором (III)', song:'частый ход в минорных секвенциях'},
+    {idx:[0,3,6,5],     name:'Эпический оборот',          song:'в духе рок- и метал-баллад'},
+    {idx:[0,6,5,4],     name:'Андалузский каданс',        song:'Hit the Road Jack — Ray Charles'},
+    {idx:[0,5,6,0],     name:'Плагальный минорный оборот', song:'в духе All Along the Watchtower'}
+  ];
+
+  var STORAGE_KEY = 'cadence-trainer-v2';
+
+  var state = {
+    rootPc: 0,
+    mode: 'major',
+    harmonic: true,
+    seventh: false,
+    level: 2,
+    tab: 'chords',
+    order: 'forward',
+    autoTonic: true,
+    walkdown: true,
+    randomKey: false,
+    instrument: 'piano',
+    correct: 0,
+    total: 0,
+    streak: 0,
+    best: 0,
+    current: null,
+    awaitingAnswer: false,
+    prog: null
+  };
+
+  function loadPersisted(){
+    try{
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      var saved = JSON.parse(raw);
+      ['rootPc','mode','harmonic','seventh','level','tab','order','autoTonic','walkdown','randomKey','instrument','correct','total','streak','best'].forEach(function(k){
+        if(saved[k] !== undefined) state[k] = saved[k];
+      });
+    }catch(e){ /* private mode or blocked storage: ignore */ }
+  }
+
+  function savePersisted(){
+    try{
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        rootPc:state.rootPc, mode:state.mode, harmonic:state.harmonic, seventh:state.seventh,
+        level:state.level, tab:state.tab, order:state.order, autoTonic:state.autoTonic, walkdown:state.walkdown, randomKey:state.randomKey, instrument:state.instrument,
+        correct:state.correct, total:state.total, streak:state.streak, best:state.best
+      }));
+    }catch(e){ /* ignore */ }
+  }
+
+  function getDegrees(){
+    return state.mode === 'major' ? MAJOR_DEGREES : minorDegrees(state.harmonic);
+  }
+
+  function degreeSymbol(deg){
+    if(!state.seventh){
+      return deg.triad === 'dim' ? deg.base + '°' : deg.base;
+    }
+    var suffix = {maj7:'maj7', min7:'7', dom7:'7', halfdim7:'ø7'}[deg.seventh] || '7';
+    return deg.base + suffix;
+  }
+
+  function chordName(deg){
+    var pc = (state.rootPc + deg.offset) % 12;
+    var suffix = state.seventh ? SEVENTH_SUFFIX[deg.seventh] : TRIAD_SUFFIX[deg.triad];
+    return NOTE_NAMES_LETTER[pc] + suffix;
+  }
+
+  function chordNoteNames(deg){
+    var pc = (state.rootPc + deg.offset) % 12;
+    var ivs = state.seventh ? SEVENTH_INTERVALS[deg.seventh] : TRIAD_INTERVALS[deg.triad];
+    return ivs.map(function(iv){ return NOTE_NAMES_LETTER[(pc + iv) % 12]; }).join('–');
+  }
+
+  function chordFormula(deg){
+    var formula = state.seventh ? SEVENTH_FORMULA[deg.seventh] : TRIAD_FORMULA[deg.triad];
+    var steps = state.seventh ? SEVENTH_STEPS[deg.seventh] : TRIAD_STEPS[deg.triad];
+    return formula + ' (' + steps + ')';
+  }
+
+  function modeForDegree(idx){
+    if(state.mode === 'minor' && idx === 4 && state.harmonic){
+      return 'альтерир. (гарм. минор)';
+    }
+    var table = state.mode === 'major' ? MAJOR_MODE_IDX : MINOR_MODE_IDX;
+    var modeIdx = table[idx];
+    var tag = modeIdx === 0 ? ', мажор' : (modeIdx === 5 ? ', нат. минор' : '');
+    return MODE_NAMES[modeIdx] + tag + ' (' + MODE_STEPS[modeIdx] + ')';
+  }
+
+  function keyLabel(){
+    return NOTE_NAMES_RU[state.rootPc] + ' ' + (state.mode === 'major' ? 'мажор' : 'минор');
+  }
+
+  function tonicMidi(){ return 48 + state.rootPc; }
+
+  function chordMidiForIndex(idx){
+    var deg = getDegrees()[idx];
+    var root = tonicMidi() + deg.offset;
+    var intervals = state.seventh ? SEVENTH_INTERVALS[deg.seventh] : TRIAD_INTERVALS[deg.triad];
+    return intervals.map(function(iv){ return root + iv; });
+  }
+
+  function eligibleProgressions(){
+    var pool = state.mode === 'major' ? MAJOR_PROGRESSIONS : MINOR_PROGRESSIONS;
+    var levelSet = LEVELS[state.level - 1];
+    return pool.filter(function(p){
+      return p.idx.every(function(i){ return levelSet.indexOf(i) !== -1; });
+    });
+  }
+
+  // ---- audio (Tone.js) ----
+  var TONIC_GAP = 1.5;
+  function midiToFreq(m){ return 440 * Math.pow(2, (m - 69) / 12); }
+
+  // Инструменты: реальные сэмплы (грузятся по требованию), синтезатор — запасной вариант без сети.
+  var SALAMANDER = 'https://tonejs.github.io/audio/salamander/';
+  var GLEITZ = 'https://gleitz.github.io/midi-js-soundfonts/';
+  var FLAT_NAMES = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+  var SHARP_S = { 0:'C', 3:'Ds', 6:'Fs', 9:'A' };
+
+  var INSTRUMENTS = {
+    piano:   { label:'Рояль',                  kind:'salamander', volume:1, release:1.2, strum:0.006 },
+    epiano:  { label:'Электропиано (Rhodes)',  kind:'gleitz', bank:'FluidR3_GM', name:'electric_piano_1',     volume:10, release:1.0, strum:0.008 },
+    nylon:   { label:'Гитара (нейлон)',        kind:'gleitz', bank:'MusyngKite', name:'acoustic_guitar_nylon', volume:15,  release:1.0, strum:0.028 },
+    steel:   { label:'Гитара (стальные струны)',kind:'gleitz', bank:'MusyngKite', name:'acoustic_guitar_steel', volume:12, release:1.0, strum:0.026 },
+    strings: { label:'Струнный ансамбль',      kind:'gleitz', bank:'MusyngKite', name:'string_ensemble_1',   volume:11, release:0.9, strum:0 },
+    organ:   { label:'Орган',                  kind:'gleitz', bank:'FluidR3_GM', name:'drawbar_organ',       volume:8, release:0.3, strum:0 },
+    choir:   { label:'Хор',                    kind:'gleitz', bank:'FluidR3_GM', name:'choir_aahs',          volume:14, release:0.8, strum:0 },
+    synth:   { label:'Синтезатор (без интернета)', kind:'synth', strum:0 }
+  };
+  var INSTRUMENT_ORDER = ['piano','epiano','nylon','steel','strings','organ','choir','synth'];
+
+  var toneStarted = false;
+  var master = null, fallbackSynth = null, dronePad = null;
+  var samplers = {};      // id -> Tone.Sampler
+  var samplerReady = {};  // id -> true | 'error'
+
+  function sampleUrls(inst){
+    // Сэмпл через каждые три полутона (C, D#, F#, A) в октавах 1–7: Sampler дотягивает остальные ноты.
+    var urls = {};
+    for(var oct = 1; oct <= 7; oct++){
+      [0,3,6,9].forEach(function(pc){
+        var midi = (oct + 1) * 12 + pc;
+        urls[midi] = inst.kind === 'salamander'
+          ? SHARP_S[pc] + oct + '.mp3'
+          : FLAT_NAMES[pc] + oct + '.mp3';
+      });
+    }
+    return urls;
+  }
+
+  function buildMaster(){
+    var limiter = new Tone.Limiter(-1).toDestination();
+    var comp = new Tone.Compressor({ threshold: -18, ratio: 2.5, attack: 0.01, release: 0.25 }).connect(limiter);
+    var reverb = new Tone.Reverb({ decay: 2.4, preDelay: 0.02, wet: 0.22 }).connect(comp);
+    var eq = new Tone.EQ3({ low: 0, mid: -1, high: -1.5 }).connect(reverb);
+    master = eq;
+  }
+
+  function buildFallbackSynth(){
+    fallbackSynth = new Tone.PolySynth(Tone.MonoSynth, {
+      oscillator: { type: 'custom', partials: [1, 0.55, 0.35, 0.22, 0.14, 0.10, 0.06, 0.04, 0.025, 0.015] },
+      envelope: { attack: 0.002, decay: 1.8, sustain: 0.05, release: 1.6 },
+      filter: { type: 'lowpass', Q: 1, rolloff: -24 },
+      filterEnvelope: { attack: 0.001, decay: 0.6, sustain: 0.15, release: 1.2, baseFrequency: 280, octaves: 5.2 }
+    });
+    fallbackSynth.volume.value = -10;
+    fallbackSynth.connect(master);
+  }
+
+  function buildDronePad(){
+    // Мягкий тянущийся пэд: у рояля и гитары звук затухает, поэтому бурдон играет отдельный голос.
+    dronePad = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'fatsine', count: 3, spread: 14 },
+      envelope: { attack: 0.8, decay: 0.3, sustain: 0.9, release: 1.8 }
+    });
+    dronePad.volume.value = -16;
+    dronePad.connect(master);
+  }
+
+  function loadInstrument(id){
+    var inst = INSTRUMENTS[id];
+    if(!inst || inst.kind === 'synth' || samplers[id]) return;
+    setInstrumentStatus('Загружаю «' + inst.label + '»…');
+    var baseUrl = inst.kind === 'salamander' ? SALAMANDER : GLEITZ + inst.bank + '/' + inst.name + '-mp3/';
+    samplers[id] = new Tone.Sampler({
+      urls: sampleUrls(inst),
+      baseUrl: baseUrl,
+      release: inst.release,
+      onload: function(){
+        samplerReady[id] = true;
+        if(state.instrument === id) setInstrumentStatus('');
+      },
+      onerror: function(){
+        samplerReady[id] = 'error';
+        if(state.instrument === id) setInstrumentStatus('Не удалось загрузить сэмплы — играет синтезатор');
+      }
+    });
+    samplers[id].volume.value = inst.volume;
+    samplers[id].connect(master);
+  }
+
+  function setInstrumentStatus(text){
+    if(els && els.instrumentStatus){
+      els.instrumentStatus.textContent = text;
+      els.instrumentStatus.hidden = !text;
+    }
+  }
+
+  // Граф и сэмплы создаются сразу при открытии: к первому нажатию они уже загружены.
+  // Сам звук браузер разрешит только после клика — это делает ensureAudio.
+  function initAudioGraph(){
+    if(typeof Tone === 'undefined') return;
+    if(!master){
+      buildMaster();
+      buildFallbackSynth();
+      buildDronePad();
+    }
+    loadInstrument(state.instrument);
+  }
+
+  function ensureAudio(){
+    if(typeof Tone === 'undefined') return;
+    Tone.start();
+    toneStarted = true;
+    initAudioGraph();
+  }
+
+  function isLoading(id){
+    return INSTRUMENTS[id] && INSTRUMENTS[id].kind !== 'synth' && samplers[id] && samplerReady[id] === undefined;
+  }
+
+  function currentVoice(){
+    var id = state.instrument;
+    if(INSTRUMENTS[id] && INSTRUMENTS[id].kind !== 'synth' && samplerReady[id] === true) return samplers[id];
+    return fallbackSynth;
+  }
+
+  function scheduleEvents(events, waited){
+    ensureAudio();
+    if(!master) return;
+    if(!waited && isLoading(state.instrument)){
+      Tone.loaded().then(function(){ scheduleEvents(events, true); });
+      return;
+    }
+    var voice = currentVoice();
+    var strum = voice === fallbackSynth ? 0 : (INSTRUMENTS[state.instrument].strum || 0);
+    var base = Tone.now() + 0.06;
+    events.forEach(function(ev){
+      var freqs = ev.freqs.slice().sort(function(a, b){ return a - b; });
+      freqs.forEach(function(f, i){
+        // Лёгкое «живое» исполнение: бас чуть громче, верхний голос чуть ярче, аккорд слегка разложен.
+        var vel = 0.62 + (i === 0 ? 0.08 : 0) + (i === freqs.length - 1 ? 0.05 : 0) + (Math.random() - 0.5) * 0.08;
+        var jitter = freqs.length > 1 ? Math.random() * 0.004 : 0;
+        voice.triggerAttackRelease(f, ev.dur, base + ev.time + i * strum + jitter, vel);
+      });
+    });
+  }
+
+  function playChord(midiNotes){
+    scheduleEvents([{ freqs: midiNotes.map(midiToFreq), time: 0, dur: 1.8 }]);
+  }
+
+  function playWalkdown(fromIdx){
+    var events = [];
+    var t = 0;
+    var num = fromIdx + 1;
+    var distDown = num - 1;
+    var distUp = 8 - num;
+    var i;
+    if(distUp < distDown){
+      for(i = fromIdx; i <= 6; i++){
+        events.push({ freqs: chordMidiForIndex(i).map(midiToFreq), time: t, dur: 0.5 });
+        t += 0.56;
+      }
+      var octaveTonic = chordMidiForIndex(0).map(function(m){ return m + 12; });
+      events.push({ freqs: octaveTonic.map(midiToFreq), time: t, dur: 0.9 });
+    } else {
+      for(i = fromIdx; i >= 0; i--){
+        events.push({ freqs: chordMidiForIndex(i).map(midiToFreq), time: t, dur: i === 0 ? 0.9 : 0.5 });
+        t += 0.56;
+      }
+    }
+    scheduleEvents(events);
+  }
+
+  var droneOn = false;
+  var droneFreqs = null;
+  function toggleDrone(){
+    ensureAudio();
+    if(!dronePad) return;
+    if(droneOn){
+      dronePad.triggerRelease(droneFreqs);
+      droneOn = false;
+    } else {
+      var root = tonicMidi() - 12;
+      droneFreqs = [midiToFreq(root), midiToFreq(root + 7), midiToFreq(root + 12)];
+      dronePad.triggerAttack(droneFreqs);
+      droneOn = true;
+    }
+    if(els.droneBtn){
+      els.droneBtn.textContent = droneOn ? 'Остановить дрон ■' : 'Держать тонику ♪';
+      els.droneBtn.classList.toggle('active', droneOn);
+    }
+  }
+
+  function stopDrone(){
+    if(droneOn){
+      if(dronePad && droneFreqs) dronePad.triggerRelease(droneFreqs);
+      droneOn = false;
+      if(els.droneBtn){
+        els.droneBtn.textContent = 'Держать тонику ♪';
+        els.droneBtn.classList.remove('active');
+      }
+    }
+  }
+
+  function decideReverse(){
+    if(state.order === 'backward') return true;
+    if(state.order === 'random') return Math.random() < 0.5;
+    return false;
+  }
+
+  function scaleRunEvents(){
+    var degrees = getDegrees();
+    var offsets = degrees.map(function(d){ return d.offset; }).slice().sort(function(a, b){ return a - b; });
+    offsets.push(offsets[0] + 12);
+    var root = tonicMidi();
+    var stepDur = 0.11;
+    var events = offsets.map(function(off, i){
+      return { freqs: [midiToFreq(root + off)], time: i * stepDur, dur: stepDur * 0.9 };
+    });
+    return { events: events, duration: offsets.length * stepDur };
+  }
+
+  function playCurrentSequence(){
+    if(!state.current) return;
+    var tonicChord = chordMidiForIndex(0).map(midiToFreq);
+    var quizChord = chordMidiForIndex(state.current.degreeIndex).map(midiToFreq);
+    if(!state.autoTonic){
+      scheduleEvents([{ freqs: quizChord, time: 0, dur: 1.6 }]);
+      return;
+    }
+    if(state.current.reverse){
+      scheduleEvents([
+        { freqs: quizChord, time: 0, dur: 1.6 },
+        { freqs: tonicChord, time: TONIC_GAP, dur: 1.6 }
+      ]);
+    } else {
+      var scale = scaleRunEvents();
+      var t0 = scale.duration + 0.06;
+      scheduleEvents(scale.events.concat([
+        { freqs: tonicChord, time: t0, dur: 1.6 },
+        { freqs: quizChord, time: t0 + TONIC_GAP, dur: 1.6 }
+      ]));
+    }
+  }
+
+  function playProgressionSequence(){
+    if(!state.prog) return;
+    var reverse = state.prog.reverse;
+    var events = [];
+    var t = 0;
+    if(state.autoTonic && !reverse){
+      var scale = scaleRunEvents();
+      events = events.concat(scale.events);
+      t = scale.duration + 0.06;
+      events.push({ freqs: chordMidiForIndex(0).map(midiToFreq), time: t, dur: 1.6 });
+      t += TONIC_GAP;
+    }
+    state.prog.def.idx.forEach(function(chordIdx){
+      events.push({ freqs: chordMidiForIndex(chordIdx).map(midiToFreq), time: t, dur: 1.6 });
+      t += 1.1;
+    });
+    if(state.autoTonic && reverse){
+      events.push({ freqs: chordMidiForIndex(0).map(midiToFreq), time: t, dur: 1.6 });
+    }
+    scheduleEvents(events);
+  }
+
+  // ---- dom refs ----
+  var els = {};
+  ['keyReadout','levelReadout',
+   'panelChords','playChordBtn','playTonicBtn','feedback','degreeGrid','nextBtn',
+   'panelProgressions','progPlayBtn','progTonicBtn','progFeedback','progSlots','progDegreeGrid','progName','progNextBtn',
+   'rootSelect','harmonicRow','harmonicToggle','levelSlider','levelValue','levelCaption',
+   'autoTonicToggle','walkdownToggle','randomKeyToggle','instrumentSelect','instrumentStatus','orderToggleGroup','droneBtn','theoryKey','theoryBody',
+   'statCorrect','statTotal','statStreak','statBest','resetStatsBtn'
+  ].forEach(function(id){ els[id] = document.getElementById(id); });
+
+  var tabButtons = Array.prototype.slice.call(document.querySelectorAll('.tabs button'));
+  var modeButtons = Array.prototype.slice.call(document.querySelectorAll('.mode-toggle button[data-mode]'));
+  var seventhButtons = Array.prototype.slice.call(document.querySelectorAll('.mode-toggle button[data-seventh]'));
+  var orderButtons = Array.prototype.slice.call(document.querySelectorAll('.mode-toggle button[data-order]'));
+
+  function populateRootSelect(){
+    els.rootSelect.innerHTML = '';
+    NOTE_NAMES_RU.forEach(function(name, pc){
+      var opt = document.createElement('option');
+      opt.value = pc;
+      opt.textContent = name;
+      els.rootSelect.appendChild(opt);
+    });
+    els.rootSelect.value = state.rootPc;
+  }
+
+  function updateReadouts(){
+    els.keyReadout.textContent = NOTE_NAMES_RU[state.rootPc] + ' ' + (state.mode === 'major' ? 'мажор' : 'минор');
+    var degrees = getDegrees();
+    var syms = LEVELS[state.level - 1].map(function(i){ return degreeSymbol(degrees[i]); }).join(' · ');
+    els.levelReadout.textContent = 'Уровень ' + state.level + ' · ' + syms;
+    els.levelCaption.textContent = syms + (state.level === 6 ? ' (все ступени)' : '');
+    els.levelValue.textContent = state.level;
+  }
+
+  function updateStatsUI(){
+    els.statCorrect.textContent = state.correct;
+    els.statTotal.textContent = state.total;
+    els.statStreak.textContent = state.streak;
+    els.statBest.textContent = state.best;
+  }
+
+  function setFeedbackEl(el, text, cls){
+    el.textContent = text;
+    el.className = 'feedback' + (cls ? ' ' + cls : '');
+  }
+
+  function renderPalette(container, onClick){
+    var degrees = getDegrees();
+    var levelIdx = LEVELS[state.level - 1];
+    container.innerHTML = '';
+    container.classList.toggle('sevenths', state.seventh);
+    levelIdx.forEach(function(idx){
+      var deg = degrees[idx];
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'degree-tile';
+      btn.dataset.idx = idx;
+      btn.dataset.num = deg.num;
+      btn.innerHTML = '<span class="roman">' + degreeSymbol(deg) + '</span><span class="chordname">' + chordName(deg) + '</span>';
+      btn.addEventListener('click', function(){ onClick(idx, btn); });
+      container.appendChild(btn);
+    });
+  }
+
+  // ---- chords tab ----
+  function prepareChordQuestion(opts){
+    opts = opts || {};
+    var levelIdx = LEVELS[state.level - 1];
+    var choice = levelIdx[Math.floor(Math.random() * levelIdx.length)];
+    if(state.current && levelIdx.length > 1 && choice === state.current.degreeIndex){
+      choice = levelIdx[(levelIdx.indexOf(choice) + 1) % levelIdx.length];
+    }
+    state.current = { degreeIndex: choice, reverse: decideReverse() };
+    state.awaitingAnswer = true;
+    renderPalette(els.degreeGrid, onAnswerChord);
+    els.nextBtn.hidden = true;
+    if(opts.autoplay){
+      ensureAudio();
+      setFeedbackEl(els.feedback, 'Тональность: ' + keyLabel() + ' — слушайте…', '');
+      playCurrentSequence();
+    } else {
+      setFeedbackEl(els.feedback, 'Тональность: ' + keyLabel() + '. Нажмите «Играть аккорд», чтобы начать', '');
+    }
+  }
+
+  function onAnswerChord(idx, btnEl){
+    if(!state.awaitingAnswer) return;
+    state.awaitingAnswer = false;
+    state.total++;
+    var correctIdx = state.current.degreeIndex;
+    var degrees = getDegrees();
+    if(idx === correctIdx){
+      state.correct++;
+      state.streak++;
+      state.best = Math.max(state.best, state.streak);
+      btnEl.classList.add('is-correct');
+      setFeedbackEl(els.feedback, 'Верно — ' + degreeSymbol(degrees[idx]) + ' (' + chordName(degrees[idx]) + ')', 'good');
+    } else {
+      state.streak = 0;
+      btnEl.classList.add('is-wrong');
+      var correctBtn = els.degreeGrid.querySelector('[data-idx="' + correctIdx + '"]');
+      if(correctBtn) correctBtn.classList.add('is-correct');
+      setFeedbackEl(els.feedback, 'Неверно — правильный ответ: ' + degreeSymbol(degrees[correctIdx]) + ' (' + chordName(degrees[correctIdx]) + ')', 'bad');
+    }
+    Array.prototype.forEach.call(els.degreeGrid.children, function(b){ b.disabled = true; });
+    els.nextBtn.hidden = false;
+    updateStatsUI();
+    savePersisted();
+    if(state.walkdown){ playWalkdown(correctIdx); }
+  }
+
+  // ---- progressions tab ----
+  function renderSlots(){
+    els.progSlots.innerHTML = '';
+    state.prog.def.idx.forEach(function(_, i){
+      var slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.innerHTML = '<span class="slot-mark">' + (i + 1) + '</span><span class="slot-sym">?</span><span class="slot-name"></span>';
+      els.progSlots.appendChild(slot);
+    });
+    highlightPointer();
+  }
+
+  function highlightPointer(){
+    Array.prototype.forEach.call(els.progSlots.children, function(s, i){
+      s.classList.toggle('is-current', !state.prog.complete && i === state.prog.pointer);
+    });
+  }
+
+  function prepareProgression(opts){
+    opts = opts || {};
+    var pool = eligibleProgressions();
+    var pick = pool[Math.floor(Math.random() * pool.length)];
+    if(state.prog && pool.length > 1 && pick === state.prog.def){
+      pick = pool[(pool.indexOf(pick) + 1) % pool.length];
+    }
+    state.prog = { def: pick, reverse: decideReverse(), answers: new Array(pick.idx.length).fill(null), pointer: 0, complete: false };
+    renderPalette(els.progDegreeGrid, onAnswerProgSlot);
+    renderSlots();
+    els.progNextBtn.hidden = true;
+    els.progName.hidden = true;
+    if(opts.autoplay){
+      setFeedbackEl(els.progFeedback, 'Тональность: ' + keyLabel() + ' — слушайте…', '');
+      playProgressionSequence();
+    } else {
+      setFeedbackEl(els.progFeedback, 'Тональность: ' + keyLabel() + '. Нажмите «Играть последовательность», чтобы начать', '');
+    }
+  }
+
+  function onAnswerProgSlot(idx, btnEl){
+    if(!state.prog || state.prog.complete) return;
+    var pos = state.prog.pointer;
+    var degrees = getDegrees();
+    var correctIdx = state.prog.def.idx[pos];
+    var isCorrect = idx === correctIdx;
+
+    state.prog.answers[pos] = idx;
+    state.total++;
+    if(isCorrect){ state.correct++; state.streak++; state.best = Math.max(state.best, state.streak); }
+    else { state.streak = 0; }
+
+    var slotEl = els.progSlots.children[pos];
+    slotEl.querySelector('.slot-sym').textContent = degreeSymbol(degrees[idx]);
+    slotEl.querySelector('.slot-name').textContent = chordName(degrees[idx]);
+    slotEl.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
+    if(!isCorrect){
+      var correctRow = document.createElement('span');
+      correctRow.className = 'slot-correct';
+      correctRow.textContent = 'было: ' + degreeSymbol(degrees[correctIdx]) + ' (' + chordName(degrees[correctIdx]) + ')';
+      slotEl.appendChild(correctRow);
+    }
+
+    btnEl.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
+    window.setTimeout(function(){ btnEl.classList.remove('is-correct', 'is-wrong'); }, 350);
+
+    state.prog.pointer++;
+    updateStatsUI();
+    savePersisted();
+
+    if(state.prog.pointer >= state.prog.def.idx.length){
+      state.prog.complete = true;
+      var correctCount = state.prog.answers.filter(function(a, i){ return a === state.prog.def.idx[i]; }).length;
+      var allRight = correctCount === state.prog.def.idx.length;
+      setFeedbackEl(els.progFeedback, 'Верно ' + correctCount + ' из ' + state.prog.def.idx.length, allRight ? 'good' : 'bad');
+      var chainStr = state.prog.def.idx.map(function(i){ return degreeSymbol(degrees[i]); }).join('–');
+      els.progName.hidden = false;
+      els.progName.textContent = keyLabel() + ' — «' + state.prog.def.name + '» (' + chainStr + ') — ' + state.prog.def.song;
+      els.progNextBtn.hidden = false;
+      Array.prototype.forEach.call(els.progDegreeGrid.children, function(b){ b.disabled = true; });
+    }
+    highlightPointer();
+  }
+
+  function refreshBoth(){
+    stopDrone();
+    prepareChordQuestion({ autoplay: state.tab === 'chords' });
+    prepareProgression({ autoplay: state.tab === 'progressions' });
+    updateReadouts();
+    renderTheoryTable();
+  }
+
+  function renderTheoryTable(){
+    if(!els.theoryBody) return;
+    els.theoryKey.textContent = keyLabel();
+    var degrees = getDegrees();
+    var rows = degrees.map(function(deg, idx){
+      return '<tr><td class="roman-cell">' + degreeSymbol(deg) + '</td>' +
+        '<td>' + chordName(deg) + '</td>' +
+        '<td>' + chordNoteNames(deg) + '</td>' +
+        '<td>' + chordFormula(deg) + '</td>' +
+        '<td>' + modeForDegree(idx) + '</td></tr>';
+    });
+    rows.push('<tr><td class="roman-cell">' + degreeSymbol(degrees[0]) + ' (VIII)</td>' +
+      '<td>' + chordName(degrees[0]) + '</td>' +
+      '<td>' + chordNoteNames(degrees[0]) + '</td>' +
+      '<td>' + chordFormula(degrees[0]) + '</td>' +
+      '<td>' + modeForDegree(0) + '</td></tr>');
+    els.theoryBody.innerHTML = rows.join('');
+  }
+
+  // ---- tabs ----
+  tabButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      state.tab = btn.dataset.tab;
+      tabButtons.forEach(function(b){
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+      });
+      els.panelChords.hidden = state.tab !== 'chords';
+      els.panelProgressions.hidden = state.tab !== 'progressions';
+      savePersisted();
+    });
+  });
+
+  // ---- settings wiring ----
+  els.playChordBtn.addEventListener('click', function(){
+    ensureAudio();
+    if(state.awaitingAnswer){ setFeedbackEl(els.feedback, 'Слушайте ещё раз…', ''); }
+    playCurrentSequence();
+  });
+
+  els.playTonicBtn.addEventListener('click', function(){
+    ensureAudio();
+    playChord(chordMidiForIndex(0));
+  });
+
+  function pickRandomRoot(){
+    var pc = Math.floor(Math.random() * 11);
+    state.rootPc = pc >= state.rootPc ? pc + 1 : pc;
+    els.rootSelect.value = state.rootPc;
+    savePersisted();
+  }
+
+  function nextQuestion(){
+    if(state.randomKey){
+      pickRandomRoot();
+      refreshBoth();
+    } else if(state.tab === 'chords'){
+      prepareChordQuestion({ autoplay: true });
+    } else {
+      prepareProgression({ autoplay: true });
+    }
+  }
+
+  els.nextBtn.addEventListener('click', nextQuestion);
+
+  els.progPlayBtn.addEventListener('click', function(){
+    ensureAudio();
+    if(!state.prog.complete){ setFeedbackEl(els.progFeedback, 'Слушайте ещё раз…', ''); }
+    playProgressionSequence();
+  });
+
+  els.progTonicBtn.addEventListener('click', function(){
+    ensureAudio();
+    playChord(chordMidiForIndex(0));
+  });
+
+  els.progNextBtn.addEventListener('click', nextQuestion);
+
+  els.rootSelect.addEventListener('change', function(){
+    state.rootPc = parseInt(els.rootSelect.value, 10);
+    savePersisted();
+    refreshBoth();
+  });
+
+  modeButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      state.mode = btn.dataset.mode;
+      modeButtons.forEach(function(b){ b.classList.toggle('active', b === btn); });
+      els.harmonicRow.hidden = state.mode !== 'minor';
+      savePersisted();
+      refreshBoth();
+    });
+  });
+
+  seventhButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      state.seventh = btn.dataset.seventh === 'true';
+      seventhButtons.forEach(function(b){ b.classList.toggle('active', b === btn); });
+      savePersisted();
+      refreshBoth();
+    });
+  });
+
+  els.harmonicToggle.addEventListener('change', function(){
+    state.harmonic = els.harmonicToggle.checked;
+    savePersisted();
+    refreshBoth();
+  });
+
+  els.levelSlider.addEventListener('input', function(){
+    state.level = parseInt(els.levelSlider.value, 10);
+    savePersisted();
+    refreshBoth();
+  });
+
+  orderButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if(btn.disabled) return;
+      state.order = btn.dataset.order;
+      orderButtons.forEach(function(b){ b.classList.toggle('active', b === btn); });
+      savePersisted();
+      refreshBoth();
+    });
+  });
+
+  function applyOrderDisabled(){
+    orderButtons.forEach(function(b){ b.disabled = !state.autoTonic; });
+    els.orderToggleGroup.classList.toggle('is-disabled', !state.autoTonic);
+  }
+
+  els.autoTonicToggle.addEventListener('change', function(){
+    state.autoTonic = els.autoTonicToggle.checked;
+    applyOrderDisabled();
+    savePersisted();
+  });
+
+  els.instrumentSelect.addEventListener('change', function(){
+    state.instrument = els.instrumentSelect.value;
+    savePersisted();
+    setInstrumentStatus('');
+    ensureAudio();
+    if(state.instrument !== 'synth' && samplerReady[state.instrument] === 'error'){
+      setInstrumentStatus('Не удалось загрузить сэмплы — играет синтезатор');
+    }
+    playChord(chordMidiForIndex(0));
+  });
+
+  els.randomKeyToggle.addEventListener('change', function(){
+    state.randomKey = els.randomKeyToggle.checked;
+    savePersisted();
+  });
+
+  els.walkdownToggle.addEventListener('change', function(){
+    state.walkdown = els.walkdownToggle.checked;
+    savePersisted();
+  });
+
+  els.droneBtn.addEventListener('click', function(){ toggleDrone(); });
+
+  els.resetStatsBtn.addEventListener('click', function(){
+    state.correct = 0; state.total = 0; state.streak = 0; state.best = 0;
+    updateStatsUI();
+    savePersisted();
+  });
+
+  document.addEventListener('keydown', function(e){
+    var tag = document.activeElement && document.activeElement.tagName;
+    if(tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
+    if(e.key === ' '){
+      e.preventDefault();
+      ensureAudio();
+      if(state.tab === 'chords'){ playCurrentSequence(); } else { playProgressionSequence(); }
+      return;
+    }
+    if(e.key === 't' || e.key === 'T' || e.key === 'ц' || e.key === 'Ц'){
+      ensureAudio();
+      playChord(chordMidiForIndex(0));
+      return;
+    }
+    var nextBtnActive = state.tab === 'chords' ? els.nextBtn : els.progNextBtn;
+    if(!nextBtnActive.hidden && (e.key === 'Enter' || e.key === 'n' || e.key === 'N')){
+      nextQuestion();
+      return;
+    }
+    var num = parseInt(e.key, 10);
+    if(!isNaN(num)){
+      var activeContainer = state.tab === 'chords' ? els.degreeGrid : els.progDegreeGrid;
+      var tile = activeContainer.querySelector('[data-num="' + num + '"]');
+      if(tile && !tile.disabled) tile.click();
+    }
+  });
+
+  // ---- init ----
+  function applyUIFromState(){
+    populateRootSelect();
+    modeButtons.forEach(function(b){ b.classList.toggle('active', b.dataset.mode === state.mode); });
+    seventhButtons.forEach(function(b){ b.classList.toggle('active', (b.dataset.seventh === 'true') === state.seventh); });
+    orderButtons.forEach(function(b){ b.classList.toggle('active', b.dataset.order === state.order); });
+    els.harmonicRow.hidden = state.mode !== 'minor';
+    els.harmonicToggle.checked = state.harmonic;
+    els.levelSlider.value = state.level;
+    els.autoTonicToggle.checked = state.autoTonic;
+    els.walkdownToggle.checked = state.walkdown;
+    els.randomKeyToggle.checked = state.randomKey;
+    els.instrumentSelect.innerHTML = '';
+    INSTRUMENT_ORDER.forEach(function(id){
+      var opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = INSTRUMENTS[id].label;
+      els.instrumentSelect.appendChild(opt);
+    });
+    if(!INSTRUMENTS[state.instrument]) state.instrument = 'piano';
+    els.instrumentSelect.value = state.instrument;
+    applyOrderDisabled();
+    tabButtons.forEach(function(b){
+      var active = b.dataset.tab === state.tab;
+      b.classList.toggle('active', active);
+      b.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+    els.panelChords.hidden = state.tab !== 'chords';
+    els.panelProgressions.hidden = state.tab !== 'progressions';
+    updateStatsUI();
+  }
+
+  function boot(hotData){
+    loadPersisted();
+    if(hotData){
+      try{
+        var parsed = typeof hotData === 'string' ? JSON.parse(hotData) : hotData;
+        Object.keys(parsed).forEach(function(k){ if(k in state) state[k] = parsed[k]; });
+      }catch(e){ /* ignore */ }
+    }
+    applyUIFromState();
+    initAudioGraph();
+    prepareChordQuestion({ autoplay: false });
+    prepareProgression({ autoplay: false });
+    updateReadouts();
+    renderTheoryTable();
+
+    if(window.claude && window.claude.hot && window.claude.hot.snapshot){
+      window.claude.hot.snapshot(function(){ return JSON.stringify(state); });
+    }
+  }
+
+  if(window.claude && window.claude.hot && window.claude.hot.ready){
+    window.claude.hot.ready(function(){ boot(window.claude.hot.data); });
+  } else {
+    boot(window.claude && window.claude.hot ? window.claude.hot.data : null);
+  }
+})();
+</script>
