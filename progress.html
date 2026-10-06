@@ -1,0 +1,343 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Прогресс</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="ear-theme.js"></script>
+<script src="ear-progress.js"></script>
+<link rel="stylesheet" href="ear-common.css">
+<link rel="stylesheet" href="ear-kid.css">
+<style>
+  .page{ max-width:880px; }
+
+  .top-stats{ display:grid; grid-template-columns:repeat(3, 1fr); gap:.6rem; margin-bottom:1.5rem; }
+  .top-stats .stat{ padding:1rem .6rem; }
+  .top-stats .stat-value{ font-size:1.9rem; }
+
+  .card{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:16px;
+    padding:1.4rem 1.6rem; box-shadow:var(--shadow); margin-bottom:1.1rem;
+  }
+  .card h2{ font-size:1.05rem; font-weight:600; margin-bottom:.9rem; }
+  .card h2 small{ font-family:var(--font-mono); font-size:.68rem; font-weight:500; color:var(--muted); margin-left:.5rem; }
+  :root[data-theme="kid"] .card{ border-width:2px; border-radius:26px; }
+
+  .heat-wrap{ max-width:380px; }
+  .heat{ display:block; width:100%; height:auto; }
+  .heat rect{ rx:2; }
+  .heat .lbl{ fill:var(--muted); font:500 9px var(--font-mono); }
+  .heat-legend{ display:flex; align-items:center; gap:.4rem; justify-content:flex-end; font-size:.7rem; color:var(--muted); margin-top:.4rem; }
+  .heat-legend i{ width:11px; height:11px; border-radius:2px; display:inline-block; }
+
+  .bars{ display:flex; flex-direction:column; gap:.5rem; }
+  .bar-row{ display:grid; grid-template-columns:minmax(7.5rem, 11rem) 1fr auto; gap:.7rem; align-items:center; font-size:.85rem; }
+  .bar-row .nm{ font-weight:600; }
+  .bar-track{ height:9px; background:var(--paper); border:1px solid var(--line); border-radius:999px; overflow:hidden; }
+  .bar-fill{ height:100%; background:var(--good); }
+  .bar-fill.mid{ background:var(--brass); }
+  .bar-fill.low{ background:var(--bad); }
+  .bar-row .num{ font-family:var(--font-mono); font-size:.76rem; color:var(--muted); font-variant-numeric:tabular-nums; }
+
+  .conf{ display:flex; flex-direction:column; gap:.35rem; font-size:.85rem; }
+  .conf div{ display:flex; gap:.5rem; align-items:baseline; }
+  .conf b{ font-weight:600; }
+  .conf .arrow{ color:var(--bad); }
+  .conf .cnt{ font-family:var(--font-mono); font-size:.74rem; color:var(--muted); margin-left:auto; }
+
+  .empty{ color:var(--muted); font-size:.85rem; margin:0; line-height:1.5; }
+  .sub{ color:var(--muted); font-size:.78rem; margin:.7rem 0 0; line-height:1.5; }
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:1.6rem; }
+  @media (max-width:640px){ .two{ grid-template-columns:1fr; gap:1.2rem; } }
+  .two h3{ font-family:var(--font-mono); font-size:.68rem; font-weight:500; text-transform:uppercase;
+           letter-spacing:.05em; color:var(--muted); margin:0 0 .6rem; }
+
+  .io{ display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; }
+  .io .status{ margin-left:auto; }
+</style>
+
+<div class="page">
+  <nav class="site-nav" aria-label="Тренажёры">
+    <a href="index.html">Все</a>
+    <a href="cadence.html">Каданс</a>
+    <a href="solfege.html">Пение с листа</a>
+    <a href="caged.html">CAGED</a>
+    <a href="modes.html">Лады</a>
+    <a href="improv.html">Импровизация</a>
+    <a href="progress.html" aria-current="page">Прогресс</a>
+  </nav>
+
+  <header class="hero">
+    <h1>Прогресс</h1>
+    <p class="tagline">Что уже слышится само, что ещё путается и сколько дней подряд идут занятия</p>
+  </header>
+
+  <main>
+    <div class="top-stats">
+      <div class="stat"><span class="stat-value" id="sStreak">0</span><span class="stat-label">дней подряд</span></div>
+      <div class="stat"><span class="stat-value" id="sTotal">0</span><span class="stat-label">ответов всего</span></div>
+      <div class="stat"><span class="stat-value" id="sAcc">—</span><span class="stat-label">точность</span></div>
+    </div>
+
+    <section class="card">
+      <h2>Занятия по дням <small id="heatRange"></small></h2>
+      <div class="heat-wrap">
+      <svg class="heat" id="heat" viewBox="0 0 740 110" role="img" aria-label="Занятия по дням за последние 12 недель"></svg>
+      <div class="heat-legend">
+        меньше
+        <i style="background:var(--paper);border:1px solid var(--line)"></i>
+        <i style="background:var(--brass-tint)"></i>
+        <i style="background:var(--brass);opacity:.65"></i>
+        <i style="background:var(--brass)"></i>
+        <i style="background:var(--brass-deep)"></i>
+        больше
+      </div>
+      </div>
+    </section>
+
+    <div id="trainers"></div>
+
+    <section class="card">
+      <h2>Перенести на другое устройство</h2>
+      <p class="empty">
+        Прогресс лежит в браузере этого устройства и никуда не отправляется. Чтобы продолжить
+        на телефоне — выгрузите файл здесь и загрузите там.
+      </p>
+      <div class="io" style="margin-top:.9rem">
+        <button type="button" class="ghost-btn" id="exportBtn">Выгрузить файл</button>
+        <button type="button" class="ghost-btn" id="importBtn">Загрузить файл</button>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+        <span class="status" id="ioStatus"></span>
+      </div>
+      <p class="sub">
+        Загрузка заменяет весь прогресс на этом устройстве, а не дополняет его.
+      </p>
+      <button type="button" class="reset-btn" id="resetAllBtn" style="margin-top:.9rem">Стереть весь прогресс</button>
+    </section>
+
+    <p class="notes">
+      Вопросы подбираются не вслепую: чем хуже даётся ступень или форма, тем чаще она выпадает.
+      Четверть вопросов всё равно случайна — иначе освоенное перестанет повторяться.
+      Пока по вопросу меньше четырёх ответов, он считается непроверенным и выпадает чаще прочих.
+    </p>
+  </main>
+</div>
+
+<script>
+(function(){
+  var P = window.EarProgress;
+
+  var TRAINERS = [
+    { ns:'cadence',      title:'Каданс — ступени',          href:'cadence.html' },
+    { ns:'cadence-prog', title:'Каданс — обороты',          href:'cadence.html' },
+    { ns:'modes',        title:'Лады',                      href:'modes.html' },
+    { ns:'caged',        title:'CAGED — ступени на грифе',  href:'caged.html' },
+    { ns:'caged-shape',  title:'CAGED — по формам, сводно',  href:'caged.html' },
+    { ns:'caged-find',   title:'CAGED — найти форму',       href:'caged.html' }
+  ];
+
+  function pct(x){ return Math.round(x * 100) + '%'; }
+  function el(tag, cls, text){
+    var e = document.createElement(tag);
+    if(cls) e.className = cls;
+    if(text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  // ---------- верхние числа ----------
+  function renderTop(){
+    var all = P.stats();
+    document.getElementById('sStreak').textContent = P.streak();
+    document.getElementById('sTotal').textContent = all.answered;
+    document.getElementById('sAcc').textContent = all.answered ? pct(all.acc) : '—';
+  }
+
+  // ---------- карта занятий ----------
+  function renderHeat(){
+    var WEEKS = 12, CELL = 13, GAP = 3, LEFT = 26, TOP = 16;
+    var days = P.days(WEEKS * 7);
+    // выравниваем на понедельник: первый столбец начинается с начала недели
+    var firstDow = (new Date(days[0].date + 'T12:00:00').getDay() + 6) % 7;
+    var max = days.reduce(function(m, d){ return Math.max(m, d.n); }, 0);
+    var svg = document.getElementById('heat');
+    var W = LEFT + WEEKS * (CELL + GAP) + 40, H = TOP + 7 * (CELL + GAP) + 6;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    var parts = [];
+
+    ['Пн','','Ср','','Пт','','Вс'].forEach(function(nm, i){
+      if(!nm) return;
+      parts.push('<text class="lbl" x="0" y="' + (TOP + i * (CELL + GAP) + CELL - 2) + '">' + nm + '</text>');
+    });
+
+    var shownMonths = {};
+    days.forEach(function(d, i){
+      var slot = firstDow + i;
+      var col = Math.floor(slot / 7), row = slot % 7;
+      var x = LEFT + col * (CELL + GAP), y = TOP + row * (CELL + GAP);
+      var fill, stroke = 'none';
+      if(!d.n){ fill = 'var(--paper)'; stroke = 'var(--line)'; }
+      else {
+        var r = max ? d.n / max : 0;
+        fill = r > 0.75 ? 'var(--brass-deep)' : r > 0.45 ? 'var(--brass)'
+             : r > 0.2  ? 'var(--brass)'      : 'var(--brass-tint)';
+      }
+      var op = (d.n && max && d.n / max <= 0.45 && d.n / max > 0.2) ? ' opacity="0.65"' : '';
+      var title = d.date + (d.n ? ' — ' + d.n + ', верно ' + d.c : ' — не занимались');
+      parts.push('<rect x="' + x + '" y="' + y + '" width="' + CELL + '" height="' + CELL +
+                 '" rx="2" fill="' + fill + '" stroke="' + stroke + '"' + op +
+                 '><title>' + title + '</title></rect>');
+
+      var m = d.date.slice(0, 7);
+      if(row === 0 && !shownMonths[m]){
+        shownMonths[m] = true;
+        var MON = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+        parts.push('<text class="lbl" x="' + x + '" y="' + (TOP - 5) + '">' +
+                   MON[+d.date.slice(5, 7) - 1] + '</text>');
+      }
+    });
+
+    svg.innerHTML = parts.join('');
+    var first = days[0].date, last = days[days.length - 1].date;
+    document.getElementById('heatRange').textContent = first + ' — ' + last;
+  }
+
+  // ---------- карточка тренажёра ----------
+  function barRow(name, acc, n){
+    var row = el('div', 'bar-row');
+    row.appendChild(el('span', 'nm', name));
+    var track = el('div', 'bar-track');
+    var fill = el('div', 'bar-fill' + (acc < 0.6 ? ' low' : acc < 0.85 ? ' mid' : ''));
+    fill.style.width = Math.max(2, acc * 100) + '%';
+    track.appendChild(fill);
+    row.appendChild(track);
+    row.appendChild(el('span', 'num', pct(acc) + ' · ' + n));
+    return row;
+  }
+
+  function renderTrainers(){
+    var host = document.getElementById('trainers');
+    host.innerHTML = '';
+    var any = false;
+
+    TRAINERS.forEach(function(t){
+      var st = P.stats(t.ns);
+      if(!st.answered) return;
+      any = true;
+
+      var card = el('section', 'card');
+      var h = el('h2');
+      var a = el('a', null, t.title);
+      a.href = t.href;
+      a.style.color = 'inherit';
+      a.style.textDecoration = 'none';
+      h.appendChild(a);
+      h.appendChild(el('small', null, st.answered + ' ответов · ' + pct(st.acc)));
+      card.appendChild(h);
+
+      var two = el('div', 'two');
+
+      var left = el('div');
+      left.appendChild(el('h3', null, 'Что даётся хуже'));
+      var items = P.entries(t.ns).sort(function(x, y){ return x.strength - y.strength; });
+      var bars = el('div', 'bars');
+      items.slice(0, 6).forEach(function(x){ bars.appendChild(barRow(x.label, x.acc, x.n)); });
+      left.appendChild(bars);
+      two.appendChild(left);
+
+      var right = el('div');
+      right.appendChild(el('h3', null, 'Что с чем путается'));
+      var conf = P.confusions(t.ns, 6);
+      if(conf.length){
+        var box = el('div', 'conf');
+        conf.forEach(function(c){
+          var d = el('div');
+          d.appendChild(el('b', null, c.from));
+          d.appendChild(el('span', 'arrow', '→'));
+          d.appendChild(el('b', null, c.to));
+          d.appendChild(el('span', 'cnt', c.n + '×'));
+          box.appendChild(d);
+        });
+        right.appendChild(box);
+      } else {
+        right.appendChild(el('p', 'empty', 'Устойчивых путаниц пока нет.'));
+      }
+      two.appendChild(right);
+
+      card.appendChild(two);
+
+      var btn = el('button', 'reset-btn', 'Стереть память этого тренажёра');
+      btn.type = 'button';
+      btn.style.marginTop = '1rem';
+      btn.addEventListener('click', function(){
+        if(!window.confirm('Стереть историю ответов «' + t.title + '»?')) return;
+        P.reset(t.ns);
+        renderAll();
+      });
+      card.appendChild(btn);
+
+      host.appendChild(card);
+    });
+
+    if(!any){
+      var c = el('section', 'card');
+      c.appendChild(el('h2', null, 'Пока пусто'));
+      var p = el('p', 'empty');
+      p.innerHTML = 'Ответьте на несколько вопросов в <a href="cadence.html">Кадансе</a>, ' +
+        '<a href="modes.html">Ладах</a> или <a href="caged.html">CAGED</a> — и здесь появится ' +
+        'разбор: что уже слышится само, а что всё ещё путается.';
+      c.appendChild(p);
+      host.appendChild(c);
+    }
+  }
+
+  function renderAll(){ renderTop(); renderHeat(); renderTrainers(); }
+
+  // ---------- перенос ----------
+  var status = document.getElementById('ioStatus');
+  function say(text){ status.textContent = text; }
+
+  document.getElementById('exportBtn').addEventListener('click', function(){
+    var blob = new Blob([P.exportJson()], { type:'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'ear-progress-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    say('Файл выгружен');
+  });
+
+  var file = document.getElementById('importFile');
+  document.getElementById('importBtn').addEventListener('click', function(){ file.click(); });
+  file.addEventListener('change', function(){
+    var f = file.files && file.files[0];
+    if(!f) return;
+    if(!window.confirm('Загрузка заменит весь прогресс на этом устройстве. Продолжить?')){
+      file.value = '';
+      return;
+    }
+    var fr = new FileReader();
+    fr.onload = function(){
+      try{
+        P.importJson(String(fr.result));
+        renderAll();
+        say('Загружено');
+      }catch(e){
+        say('Не вышло: ' + e.message);
+      }
+      file.value = '';
+    };
+    fr.readAsText(f);
+  });
+
+  document.getElementById('resetAllBtn').addEventListener('click', function(){
+    if(!window.confirm('Стереть весь прогресс по всем тренажёрам? Это не отменить.')) return;
+    P.reset();
+    renderAll();
+    say('Стёрто');
+  });
+
+  renderAll();
+})();
+</script>

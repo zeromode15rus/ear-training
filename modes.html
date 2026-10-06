@@ -4,6 +4,7 @@
 <title>Лады</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="ear-theme.js"></script>
+<script src="ear-progress.js"></script>
 <link rel="stylesheet" href="ear-common.css">
 <link rel="stylesheet" href="ear-kid.css">
 <style>
@@ -69,6 +70,7 @@
     <a href="caged.html">CAGED</a>
     <a href="modes.html" aria-current="page">Лады</a>
     <a href="improv.html">Импровизация</a>
+    <a href="progress.html">Прогресс</a>
   </nav>
 
   <header class="hero">
@@ -439,8 +441,9 @@
     });
   }
   function quizNew(){
-    var pool = quizPool(), id;
-    do { id = pool[Math.floor(Math.random() * pool.length)]; } while(pool.length > 1 && quiz.mode && id === quiz.mode.id && Math.random() < .7);
+    var pool = quizPool();
+    var id = EarProgress.pick('modes', pool, { avoid: quiz.mode ? quiz.mode.id : null });
+    if(pool.indexOf(id) < 0) id = pool[Math.floor(Math.random() * pool.length)];
     quiz.mode = F.modeById(id);
     quiz.tonic = state.quizRandom ? Math.floor(Math.random() * 12) : state.tonic;
     quiz.answered = false; quiz.given = null;
@@ -502,6 +505,12 @@
       setFeedback('Это ' + quiz.mode.name.toLowerCase() + (quiz.mode.char.length ? ' — слушайте ' + quiz.mode.charLabel : ''), 'bad');
       els.quizCompareBtn.hidden = false;
     }
+    EarProgress.record('modes', {
+      key: quiz.mode.id, label: quiz.mode.name,
+      correct: ok,
+      answerKey: id, answerLabel: (F.modeById(id) || {}).name || id
+    });
+
     Array.prototype.forEach.call(els.quizAnswers.children, function(b){ b.disabled = true; });
     els.quizNextBtn.hidden = false;
     els.quizTitle.textContent = F.noteName(quiz.tonic, F.useFlats(quiz.tonic, quiz.mode.steps)) + ' ' + quiz.mode.name.toLowerCase();

@@ -4,6 +4,7 @@
 <title>Каданс</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="ear-theme.js"></script>
+<script src="ear-progress.js"></script>
 <style>
   :root{
     --ink:#1b1814;
@@ -452,6 +453,11 @@
     font-size:.83rem;
     line-height:1.5;
   }
+  .weak-hint{
+    font-size:.78rem; line-height:1.4; color:var(--muted); margin:-.4rem 0 0;
+  }
+  .weak-hint b{ color:var(--bad); font-weight:600; }
+  .weak-hint a{ color:var(--brass-deep); }
 </style>
 <link rel="stylesheet" href="ear-kid.css">
 
@@ -462,6 +468,7 @@
     <a href="caged.html">CAGED</a>
     <a href="modes.html">Лады</a>
     <a href="improv.html">Импровизация</a>
+    <a href="progress.html">Прогресс</a>
   </nav>
 
   <header class="hero">
@@ -591,6 +598,7 @@
         <div class="stat"><span class="stat-value" id="statStreak">0</span><span class="stat-label">серия</span></div>
         <div class="stat"><span class="stat-value" id="statBest">0</span><span class="stat-label">рекорд</span></div>
       </div>
+      <p class="weak-hint" id="weakHint" hidden></p>
       <button class="reset-btn" id="resetStatsBtn" type="button">Сбросить статистику</button>
     </aside>
   </main>
@@ -1073,7 +1081,7 @@
    'panelProgressions','progPlayBtn','progTonicBtn','progFeedback','progSlots','progDegreeGrid','progName','progNextBtn',
    'rootSelect','harmonicRow','harmonicToggle','levelSlider','levelValue','levelCaption',
    'autoTonicToggle','walkdownToggle','randomKeyToggle','instrumentSelect','instrumentStatus','orderToggleGroup','droneBtn','theoryKey','theoryBody',
-   'statCorrect','statTotal','statStreak','statBest','resetStatsBtn'
+   'statCorrect','statTotal','statStreak','statBest','resetStatsBtn','weakHint'
   ].forEach(function(id){ els[id] = document.getElementById(id); });
 
   var tabButtons = Array.prototype.slice.call(document.querySelectorAll('.tabs button'));
@@ -1106,6 +1114,7 @@
     els.statTotal.textContent = state.total;
     els.statStreak.textContent = state.streak;
     els.statBest.textContent = state.best;
+    renderWeakHint();
   }
 
   function setFeedbackEl(el, text, cls){
@@ -1132,13 +1141,30 @@
   }
 
   // ---- chords tab ----
+  // Ключ вопроса для памяти: ii в миноре и II в мажоре — разные звуки, значит разные навыки.
+  function degKey(idx){
+    return state.mode + (state.mode === 'minor' && state.harmonic ? 'h' : '') +
+           '-' + (state.seventh ? '7' : '3') + '-' + idx;
+  }
+  function degLabel(idx){ return degreeSymbol(getDegrees()[idx]); }
+
+  // Одна строка под статистикой: что сейчас даётся хуже всего. Подробности — на /progress.html.
+  function renderWeakHint(){
+    var w = EarProgress.weak('cadence', 2).filter(function(x){ return x.n >= 4 && x.acc < 0.8; });
+    if(!w.length){ els.weakHint.hidden = true; return; }
+    els.weakHint.hidden = false;
+    els.weakHint.innerHTML = 'Хуже всего: ' +
+      w.map(function(x){ return '<b>' + x.label + '</b> ' + Math.round(x.acc * 100) + '%'; }).join(', ') +
+      ' · <a href="progress.html">прогресс</a>';
+  }
+
   function prepareChordQuestion(opts){
     opts = opts || {};
     var levelIdx = LEVELS[state.level - 1];
-    var choice = levelIdx[Math.floor(Math.random() * levelIdx.length)];
-    if(state.current && levelIdx.length > 1 && choice === state.current.degreeIndex){
-      choice = levelIdx[(levelIdx.indexOf(choice) + 1) % levelIdx.length];
-    }
+    var prev = state.current ? degKey(state.current.degreeIndex) : null;
+    var chosenKey = EarProgress.pick('cadence', levelIdx.map(degKey), { avoid: prev });
+    var choice = levelIdx[levelIdx.map(degKey).indexOf(chosenKey)];
+    if(choice === undefined) choice = levelIdx[Math.floor(Math.random() * levelIdx.length)];
     state.current = { degreeIndex: choice, reverse: decideReverse() };
     state.awaitingAnswer = true;
     renderPalette(els.degreeGrid, onAnswerChord);
@@ -1171,6 +1197,12 @@
       if(correctBtn) correctBtn.classList.add('is-correct');
       setFeedbackEl(els.feedback, 'Неверно — правильный ответ: ' + degreeSymbol(degrees[correctIdx]) + ' (' + chordName(degrees[correctIdx]) + ')', 'bad');
     }
+    EarProgress.record('cadence', {
+      key: degKey(correctIdx), label: degLabel(correctIdx),
+      correct: idx === correctIdx,
+      answerKey: degKey(idx), answerLabel: degLabel(idx)
+    });
+
     Array.prototype.forEach.call(els.degreeGrid.children, function(b){ b.disabled = true; });
     els.nextBtn.hidden = false;
     updateStatsUI();
@@ -1199,10 +1231,10 @@
   function prepareProgression(opts){
     opts = opts || {};
     var pool = eligibleProgressions();
-    var pick = pool[Math.floor(Math.random() * pool.length)];
-    if(state.prog && pool.length > 1 && pick === state.prog.def){
-      pick = pool[(pool.indexOf(pick) + 1) % pool.length];
-    }
+    var names = pool.map(function(p){ return p.name; });
+    var prevName = state.prog ? state.prog.def.name : null;
+    var pick = pool[names.indexOf(EarProgress.pick('cadence-prog', names, { avoid: prevName }))];
+    if(!pick) pick = pool[Math.floor(Math.random() * pool.length)];
     state.prog = { def: pick, reverse: decideReverse(), answers: new Array(pick.idx.length).fill(null), pointer: 0, complete: false };
     renderPalette(els.progDegreeGrid, onAnswerProgSlot);
     renderSlots();
@@ -1242,6 +1274,12 @@
     btnEl.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
     window.setTimeout(function(){ btnEl.classList.remove('is-correct', 'is-wrong'); }, 350);
 
+    EarProgress.record('cadence', {
+      key: degKey(correctIdx), label: degLabel(correctIdx),
+      correct: isCorrect,
+      answerKey: degKey(idx), answerLabel: degLabel(idx)
+    });
+
     state.prog.pointer++;
     updateStatsUI();
     savePersisted();
@@ -1254,6 +1292,9 @@
       var chainStr = state.prog.def.idx.map(function(i){ return degreeSymbol(degrees[i]); }).join('–');
       els.progName.hidden = false;
       els.progName.textContent = keyLabel() + ' — «' + state.prog.def.name + '» (' + chainStr + ') — ' + state.prog.def.song;
+      EarProgress.record('cadence-prog', {
+        key: state.prog.def.name, label: state.prog.def.name, correct: allRight
+      });
       els.progNextBtn.hidden = false;
       Array.prototype.forEach.call(els.progDegreeGrid.children, function(b){ b.disabled = true; });
     }
@@ -1428,7 +1469,10 @@
   els.droneBtn.addEventListener('click', function(){ toggleDrone(); });
 
   els.resetStatsBtn.addEventListener('click', function(){
+    if(!window.confirm('Сбросить счётчики и историю ответов этого тренажёра?')) return;
     state.correct = 0; state.total = 0; state.streak = 0; state.best = 0;
+    EarProgress.reset('cadence');
+    EarProgress.reset('cadence-prog');
     updateStatsUI();
     savePersisted();
   });

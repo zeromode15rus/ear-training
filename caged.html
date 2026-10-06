@@ -4,6 +4,7 @@
 <title>CAGED на грифе</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="ear-theme.js"></script>
+<script src="ear-progress.js"></script>
 <link rel="stylesheet" href="ear-common.css">
 <link rel="stylesheet" href="ear-kid.css">
 <style>
@@ -61,6 +62,7 @@
     <a href="caged.html" aria-current="page">CAGED</a>
     <a href="modes.html">Лады</a>
     <a href="improv.html">Импровизация</a>
+    <a href="progress.html">Прогресс</a>
   </nav>
 
   <header class="hero">
@@ -462,9 +464,16 @@
 
   // ---------- 1. Найди форму ----------
   var find = { v:null, revealed:false, timer:null };
+  // Форма берётся не вслепую: те, что даются хуже, выпадают чаще (ear-progress.js).
+  function pickShape(ns, prev){
+    var shapes = enabledShapes();
+    var s = EarProgress.pick(ns, shapes, { avoid: prev });
+    return shapes.indexOf(s) >= 0 ? s : pick(shapes);
+  }
+
   function findNew(){
     clearTimeout(find.timer);
-    var shape = pick(enabledShapes());
+    var shape = pickShape('caged-find', find.v ? find.v.shape : null);
     var root, v;
     do { root = Math.floor(Math.random() * 12); v = voicing(state.quality, shape, root, false); }
     while(!v || (find.v && find.v.rootPc === root && find.v.shape === shape));
@@ -492,6 +501,9 @@
   }
   function findGrade(ok){
     state.findTotal++; if(ok) state.findGood++;
+    if(find.v) EarProgress.record('caged-find', {
+      key: find.v.shape, label: 'форма ' + find.v.shape, correct: ok
+    });
     save(); updateScores(); findNew();
   }
 
@@ -547,7 +559,7 @@
   // ---------- 3. Ступени ----------
   var deg = { v:null, ask:null, answered:false };
   function degNew(){
-    var shape = pick(enabledShapes()), root, v;
+    var shape = pickShape('caged-shape', deg.v ? deg.v.shape : null), root, v;
     do { root = Math.floor(Math.random() * 12); v = voicing(state.quality, shape, root, Math.random() < .3); }
     while(!v);
     var notes = [];
@@ -572,6 +584,17 @@
     var pc = mod(OPEN[deg.ask.s] + deg.ask.f, 12);
     var nm = noteName(pc, !!FLAT_KEYS[deg.v.rootPc]);
     var roleRu = ['тоника', 'терция', 'квинта'][correct];
+    var ROLE_KEY = ['r', 't3', 't5'];
+    EarProgress.record('caged', {
+      key: deg.v.shape + '-' + ROLE_KEY[correct],
+      label: 'форма ' + deg.v.shape + ' · ' + roleRu,
+      correct: ans === correct,
+      answerKey: deg.v.shape + '-' + ROLE_KEY[ans],
+      answerLabel: 'форма ' + deg.v.shape + ' · ' + ['тоника', 'терция', 'квинта'][ans]
+    });
+    EarProgress.record('caged-shape', {
+      key: deg.v.shape, label: 'форма ' + deg.v.shape, correct: ans === correct
+    });
     var btns = els.degAnswers.children;
     if(ans === correct){
       state.degCorrect++; state.degStreak++;

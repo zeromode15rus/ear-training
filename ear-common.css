@@ -449,6 +449,11 @@
     padding:.35rem .8rem; border:1px dashed var(--line); border-radius:999px;
   }
   .theme-btn:hover{ border-color:var(--brass); color:var(--brass-deep); }
+  .weak-hint{
+    font-size:.78rem; line-height:1.4; color:var(--muted); margin:-.4rem 0 0;
+  }
+  .weak-hint b{ color:var(--bad); font-weight:600; }
+  .weak-hint a{ color:var(--brass-deep); }
   .btn-row{ display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; }
   .hint{ font-size:.78rem; color:var(--muted); margin:0; line-height:1.45; }
   .status{ font-size:.78rem; color:var(--brass-deep); }
