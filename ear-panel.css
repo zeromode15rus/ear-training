@@ -42,19 +42,7 @@
   --font-body:'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
   --font-mono:'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
 
-  /* шкала кеглей — семь ступеней вместо семнадцати значений вразнобой */
-  --t-legend:0.6875rem;   /* 11px — подписи капсом */
-  --t-xs:0.75rem;         /* 12px */
-  --t-sm:0.8125rem;       /* 13px */
-  --t-md:0.875rem;        /* 14px — основной текст */
-  --t-lg:1rem;            /* 16px — акцентный */
-  --t-xl:1.25rem;         /* 20px — заголовок раздела */
-  --t-2xl:1.75rem;        /* 28px — заголовок страницы */
-
-  /* отступы кратны четырём */
-  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-6:24px; --s-8:32px; --s-12:48px;
-
-  /* прямые углы: фаска, а не пилюля */
+  /* Шкалы кеглей и отступов берутся из ear-common.css — здесь только фаска. */
   --r-0:0; --r-1:2px; --r-2:4px;
 }
 
@@ -70,7 +58,7 @@
 :root[data-theme="panel"] .hero{ margin-bottom:var(--s-8); }
 :root[data-theme="panel"] .hero h1{
   font-family:var(--font-display);
-  font-size:var(--t-2xl);
+  font-size:var(--t-3xl);
   font-weight:600;
   letter-spacing:-0.015em;
 }
@@ -452,7 +440,7 @@
 /* прогресс и титульная */
 :root[data-theme="panel"] .heat-legend{ font-family:var(--font-mono); font-size:var(--t-legend); letter-spacing:.06em; }
 :root[data-theme="panel"] .heat-legend i{ border-radius:0; }
-:root[data-theme="panel"] .top-stats .stat-value{ font-size:var(--t-2xl); }
+:root[data-theme="panel"] .top-stats .stat-value{ font-size:var(--t-3xl); }
 :root[data-theme="panel"] .group h3{ font-family:var(--font-mono); font-size:var(--t-legend); letter-spacing:.09em; }
 :root[data-theme="panel"] .card p{ font-size:var(--t-xs); color:var(--muted); }
 
