@@ -151,6 +151,7 @@
         </select>
       </label>
       <label class="checkbox"><input type="checkbox" id="chordTonesToggle" checked> Подсвечивать звуки текущего аккорда</label>
+      <label class="checkbox"><input type="checkbox" id="tonicInToggle" checked> Тоника перед стартом</label>
       <label class="checkbox"><input type="checkbox" id="countInToggle" checked> Такт отсчёта перед стартом</label>
       <label class="checkbox"><input type="checkbox" id="bassToggle" checked> Бас</label>
       <label for="compSelect">Аккорды играет
@@ -246,7 +247,7 @@
   // ---------- состояние ----------
   var STORAGE_KEY = 'improv-trainer-v1';
   var state = { tab:'free', prog:'pop-1564', key:0, scale:'auto', style:'rock', tempo:92, pos:'auto', labels:'degree',
-    chordTones:true, countIn:true, bass:true, comp:'epiano', qaLevel:1, qaShow:'answer', phraseInst:'nylon', limitBars:8,
+    chordTones:true, tonicIn:true, countIn:true, bass:true, comp:'epiano', qaLevel:1, qaShow:'answer', phraseInst:'nylon', limitBars:8,
     custom:'Am | F | C | G' };
   var PERSIST = Object.keys(state);
   try{
@@ -428,10 +429,20 @@
   function buildTimeline(){
     var b = beatSec(), bar = 4 * b;
     var nBars = P.bars.length * Math.max(1, Math.round(48 / P.bars.length));
-    var t0 = state.countIn ? bar : 0;
     var ev = [];
+    // Такт тоники перед отсчётом: без опоры квадрат не на что «натянуть» слухом.
+    // Тоника — первый аккорд прогрессии, как и сказано в подсказке к полю.
+    var pre = 0;
+    if(state.tonicIn && P.bars.length){
+      var tonic = P.bars[0].chord;
+      ev.push({ time:0, dur:bar * .92, inst:state.comp, midi:tonic.v.notes, vel:.5,
+                onStart:function(){ coach('Тоника', 'слушайте опору'); } });
+      if(state.bass) ev.push({ time:0, dur:bar * .92, inst:'bass', midi:[tonic.v.bass], vel:.7 });
+      pre = bar;
+    }
+    var t0 = pre + (state.countIn ? bar : 0);
     if(state.countIn){
-      for(var k = 0; k < 4; k++) ev.push({ time:k * b, dur:.05, click: k === 0 ? 'accent' : 'beat', onStart:(function(k){ return function(){ setBeat(k); coach('Отсчёт: ' + (4 - k), ''); }; })(k) });
+      for(var k = 0; k < 4; k++) ev.push({ time:pre + k * b, dur:.05, click: k === 0 ? 'accent' : 'beat', onStart:(function(k){ return function(){ setBeat(k); coach('Отсчёт: ' + (4 - k), ''); }; })(k) });
     }
     var comp = state.comp;
     var cardEvery = +state.limitBars;
@@ -604,7 +615,7 @@
   var els = {};
   ['keyReadout','scaleReadout','chordRow','beats','coach','coachBig','coachSmall','phraseText','board','startBtn','recBtn','modeHint','takes',
    'progSelect','customRow','customInput','keySelect','scaleSelect','styleSelect','tempoSlider','tempoValue','posSelect','labelSelect',
-   'chordTonesToggle','countInToggle','bassToggle','compSelect','qaSettings','qaLevel','qaShow','phraseInstSelect','limitsSettings','limitBars','audioStatus'
+   'chordTonesToggle','tonicInToggle','countInToggle','bassToggle','compSelect','qaSettings','qaLevel','qaShow','phraseInstSelect','limitsSettings','limitBars','audioStatus'
   ].forEach(function(id){ els[id] = document.getElementById(id); });
   var tabButtons = Array.prototype.slice.call(document.querySelectorAll('.tabs button'));
 
@@ -647,6 +658,7 @@
     els.tempoSlider.value = state.tempo; els.tempoValue.textContent = state.tempo + ' уд/мин';
     els.labelSelect.value = state.labels;
     els.chordTonesToggle.checked = state.chordTones;
+    els.tonicInToggle.checked = state.tonicIn;
     els.countInToggle.checked = state.countIn;
     els.bassToggle.checked = state.bass;
     state.comp = EarAudio.fillSelect(els.compSelect, state.comp, ['epiano','piano','steel','nylon','organ','strings','synth']);
@@ -681,6 +693,7 @@
   els.posSelect.addEventListener('change', function(){ state.pos = els.posSelect.value; save(); renderBoard(); });
   els.labelSelect.addEventListener('change', function(){ state.labels = els.labelSelect.value; save(); renderBoard(); });
   els.chordTonesToggle.addEventListener('change', function(){ state.chordTones = els.chordTonesToggle.checked; save(); renderBoard(); });
+  els.tonicInToggle.addEventListener('change', function(){ state.tonicIn = els.tonicInToggle.checked; save(); });
   els.countInToggle.addEventListener('change', function(){ state.countIn = els.countInToggle.checked; save(); });
   els.bassToggle.addEventListener('change', function(){ state.bass = els.bassToggle.checked; save(); restartIfPlaying(); });
   els.compSelect.addEventListener('change', function(){ state.comp = els.compSelect.value; save(); EarAudio.load(state.comp); });

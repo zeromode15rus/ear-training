@@ -155,6 +155,9 @@
             <button type="button" class="ghost-btn" id="degPlayBtn">Нота и аккорд</button>
             <button type="button" class="next-btn" id="degNextBtn" hidden>Следующая →</button>
           </div>
+          <label class="checkbox" style="justify-content:center">
+            <input type="checkbox" id="degChordToggle" checked> Аккорд при новом вопросе
+          </label>
         </div>
         <p class="hint" style="text-align:center">
           Счёт: <span id="degScore">0 из 0</span> · серия <span id="degStreak">0</span>.
@@ -365,7 +368,7 @@
   var state = {
     tab:'find', quality:'major', shapes:{C:true,A:true,G:true,E:true,D:true}, labels:'degree',
     autoReveal:0, tempo:80, inst:'steel',
-    findGood:0, findTotal:0, degCorrect:0, degTotal:0, degStreak:0,
+    findGood:0, findTotal:0, degCorrect:0, degTotal:0, degStreak:0, degChord:true,
     walkRoot:0, posKey:0, posShape:'E', posProg:0, posScale:false,
     arpRoot:0, arpShape:'E', arpView:'arp', posView:'voicing'
   };
@@ -574,6 +577,9 @@
     els.degNextBtn.hidden = true;
     Array.prototype.forEach.call(els.degAnswers.children, function(b){ b.disabled = false; b.classList.remove('is-correct', 'is-wrong'); });
     drawBoard(els.degBoard, { voicings:[{ v:v, plain:true, showMutes:true }], ask:a, regions:[{ v:v, label:'форма ' + shape, active:false }] });
+    // Тональная опора перед вопросом — только аккорд формы. Спрашиваемую ноту не играем:
+    // её высота и есть ответ, подсказывать нельзя.
+    if(state.degChord) strum(v);
   }
   function degAnswer(ans){
     if(deg.answered) return;
@@ -825,7 +831,7 @@
   var els = {};
   ['findPrompt','findSub','findBoard','findRevealBtn','findGrade','findPlayBtn','findNextBtn','findScore',
    'walkPrompt','walkSteps','walkBoard','walkPrevBtn','walkPlayBtn','walkNextBtn','walkAllToggle','walkRoot','walkRandomBtn',
-   'degPrompt','degBoard','degFeedback','degAnswers','degThirdSym','degPlayBtn','degNextBtn','degScore','degStreak',
+   'degPrompt','degBoard','degFeedback','degAnswers','degThirdSym','degPlayBtn','degNextBtn','degScore','degStreak','degChordToggle',
    'posPrompt','posSub','posCards','posBoard','posPlayBtn','posScaleBtn','posScaleToggle','posDroneToggle','posKey','posShape','posProg',
    'posViewGroup','posGuideHint','arpPrompt','arpSub','arpSteps','arpBoard','arpPlayBtn','arpChordBtn','arpViewGroup','arpRoot',
    'qualityGroup','shapeChecks','labelSelect','autoRevealSelect','tempoSlider','tempoValue','instSelect','audioStatus'
@@ -878,6 +884,7 @@
   });
   els.degNextBtn.addEventListener('click', degNew);
   els.degPlayBtn.addEventListener('click', degSound);
+  els.degChordToggle.addEventListener('change', function(){ state.degChord = els.degChordToggle.checked; save(); });
   // арпеджио
   els.arpPlayBtn.addEventListener('click', arpPlay);
   els.arpChordBtn.addEventListener('click', function(){ strum(arp.list[arp.idx]); });
@@ -987,6 +994,7 @@
     els.tempoSlider.value = state.tempo;
     els.tempoValue.textContent = state.tempo + ' уд/мин';
     els.posScaleToggle.checked = state.posScale;
+    els.degChordToggle.checked = state.degChord;
     qualityButtons.forEach(function(x){ x.classList.toggle('active', x.dataset.quality === state.quality); });
   }
 

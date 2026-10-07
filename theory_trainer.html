@@ -2,40 +2,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ступени и аккорды</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="ear-theme.js"></script>
+<link rel="stylesheet" href="ear-common.css">
+<link rel="stylesheet" href="ear-kid.css">
 <style>
+/* Палитра и шрифты — общие с сайтом: их задают ear-common.css и ear-kid.css.
+   Здесь только псевдонимы под имена, которыми размечена эта страница,
+   поэтому светлая, тёмная и детская темы работают сами. */
 :root{
-  --bg:#f5f2ea;
-  --surface:#ffffff;
-  --surface-2:#eef0e6;
-  --border:#dadfd2;
-  --text:#1a231d;
-  --text-dim:#5c6b60;
-  --accent:#b8681a;
-  --accent-soft:#f1e0c8;
-  --good:#0e8a71;
-  --good-soft:#dcf3ec;
-  --bad:#c1402f;
-  --bad-soft:#f8e2de;
+  --bg:var(--paper);
+  --surface:var(--paper-raised);
+  --surface-2:var(--paper);
+  --border:var(--line);
+  --text:var(--ink);
+  --text-dim:var(--muted);
+  --accent:var(--brass);
+  --accent-soft:var(--brass-tint);
+  --good-soft:var(--good-bg);
+  --bad-soft:var(--bad-bg);
   --radius:10px;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0d1310; --surface:#151d19; --surface-2:#1b241f; --border:#2a332c;
-    --text:#e8ede8; --text-dim:#8fa197; --accent:#ffb454; --accent-soft:#3a2c14;
-    --good:#5ee6c5; --good-soft:#123c33; --bad:#ff7a6b; --bad-soft:#3d1f1a;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0d1310; --surface:#151d19; --surface-2:#1b241f; --border:#2a332c;
-  --text:#e8ede8; --text-dim:#8fa197; --accent:#ffb454; --accent-soft:#3a2c14;
-  --good:#5ee6c5; --good-soft:#123c33; --bad:#ff7a6b; --bad-soft:#3d1f1a;
 }
 
 *{box-sizing:border-box;}
 body{
   background:var(--bg); color:var(--text);
-  font-family:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  font-family:var(--font-body);
   padding:28px 16px 56px; display:flex; justify-content:center;
 }
 .mono{font-family:"IBM Plex Mono",ui-monospace,monospace;}
@@ -54,7 +46,7 @@ h1{margin:0;font-size:clamp(24px,5vw,32px);font-weight:600;letter-spacing:-0.01e
 
 label.field{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;}
 select{
-  font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text);
+  font-family:var(--font-mono);font-size:13px;color:var(--text);
   background:var(--surface-2);border:1px solid var(--border);border-radius:8px;
   padding:8px 10px;
 }
@@ -78,25 +70,28 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .mode-switch button{background:transparent;border:none;padding:7px 12px;border-radius:6px;}
 .mode-switch button.active{background:var(--accent);color:var(--bg);}
 
-.score{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text-dim);display:flex;gap:14px;margin-left:auto;}
+.score{font-family:var(--font-mono);font-size:13px;color:var(--text-dim);display:flex;gap:14px;margin-left:auto;}
 .score b{color:var(--text);font-weight:600;}
 
 .options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
 @media (max-width:480px){.options{grid-template-columns:1fr;}}
 .opt{
-  font-family:"IBM Plex Mono",monospace;font-size:14px;text-align:left;padding:12px 14px;
+  font-family:var(--font-mono);font-size:14px;text-align:left;padding:12px 14px;
   border-radius:9px;border:1px solid var(--border);background:var(--surface-2);
 }
 .opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--good);}
 .opt.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad);}
 
-.feedback{margin-top:12px;font-size:13px;color:var(--text-dim);min-height:18px;}
-.feedback.good{color:var(--good);}
-.feedback.bad{color:var(--bad);}
+/* Общий .feedback из ear-common.css центрирует текст и красит фон — здесь нужен
+   простой левый абзац, поэтому унаследованное гасим явно. */
+.feedback{margin:12px 0 0;font-size:13px;color:var(--text-dim);min-height:18px;
+  display:block;text-align:left;font-weight:400;background:none;padding:0;border-radius:0;}
+.feedback.good{color:var(--good);background:none;}
+.feedback.bad{color:var(--bad);background:none;}
 
 .target-row{display:flex;align-items:center;gap:18px;margin:18px 0 14px;flex-wrap:wrap;}
 .target-note{
-  font-family:"IBM Plex Mono",monospace;font-size:34px;font-weight:600;
+  font-family:var(--font-mono);font-size:34px;font-weight:600;
   background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
   padding:10px 22px;min-width:170px;text-align:center;line-height:1.15;
 }
@@ -111,17 +106,27 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .meter .needle.show{opacity:1;}
 .meter .needle.good{background:var(--good);}
 .meter .needle.bad{background:var(--bad);}
-.meter-scale{display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--text-dim);margin-top:4px;}
-.detected{margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text-dim);}
+.meter-scale{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-top:4px;}
+.detected{margin-top:10px;font-family:var(--font-mono);font-size:13px;color:var(--text-dim);}
 .detected b{color:var(--text);}
 
-.reveal-note{margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text-dim);}
+.reveal-note{margin-top:10px;font-family:var(--font-mono);font-size:13px;color:var(--text-dim);}
 .reveal-note b{color:var(--accent);}
 
 footer{color:var(--text-dim);font-size:12px;text-align:center;line-height:1.6;}
 </style>
 
 <div class="wrap">
+  <nav class="site-nav" aria-label="Тренажёры">
+    <a href="index.html">Все</a>
+    <a href="cadence.html">Каданс</a>
+    <a href="solfege.html">Пение с листа</a>
+    <a href="caged.html">CAGED</a>
+    <a href="modes.html">Лады</a>
+    <a href="improv.html">Импровизация</a>
+    <a href="progress.html">Прогресс</a>
+  </nav>
+
   <header>
     <h1>Ступени и аккорды</h1>
     <p class="sub">Два упражнения на слух: узнавание последовательностей аккордов и пение тонов внутри аккорда / ступеней лада. Всё — синтезированный звук, без записей чужих песен.</p>

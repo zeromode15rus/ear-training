@@ -2,59 +2,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Соло Let Down</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="ear-theme.js"></script>
+<link rel="stylesheet" href="ear-common.css">
+<link rel="stylesheet" href="ear-kid.css">
 <style>
+/* Палитра и шрифты — общие с сайтом: их задают ear-common.css и ear-kid.css.
+   Здесь только псевдонимы под имена, которыми размечена эта страница,
+   поэтому светлая, тёмная и детская темы работают сами. */
 :root{
-  --bg:#f5f2ea;
-  --surface:#ffffff;
-  --surface-2:#eef0e6;
-  --border:#dadfd2;
-  --text:#1a231d;
-  --text-dim:#5c6b60;
-  --accent:#b8681a;
-  --accent-soft:#f1e0c8;
-  --good:#0e8a71;
-  --good-soft:#dcf3ec;
-  --bad:#c1402f;
-  --bad-soft:#f8e2de;
+  --bg:var(--paper);
+  --surface:var(--paper-raised);
+  --surface-2:var(--paper);
+  --border:var(--line);
+  --text:var(--ink);
+  --text-dim:var(--muted);
+  --accent:var(--brass);
+  --accent-soft:var(--brass-tint);
+  --good-soft:var(--good-bg);
+  --bad-soft:var(--bad-bg);
   --radius:10px;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0d1310;
-    --surface:#151d19;
-    --surface-2:#1b241f;
-    --border:#2a332c;
-    --text:#e8ede8;
-    --text-dim:#8fa197;
-    --accent:#ffb454;
-    --accent-soft:#3a2c14;
-    --good:#5ee6c5;
-    --good-soft:#123c33;
-    --bad:#ff7a6b;
-    --bad-soft:#3d1f1a;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0d1310;
-  --surface:#151d19;
-  --surface-2:#1b241f;
-  --border:#2a332c;
-  --text:#e8ede8;
-  --text-dim:#8fa197;
-  --accent:#ffb454;
-  --accent-soft:#3a2c14;
-  --good:#5ee6c5;
-  --good-soft:#123c33;
-  --bad:#ff7a6b;
-  --bad-soft:#3d1f1a;
 }
 
 *{box-sizing:border-box;}
 body{
   background:var(--bg);
   color:var(--text);
-  font-family:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+  font-family:var(--font-body);
   padding:28px 16px 56px;
   display:flex;
   justify-content:center;
@@ -120,7 +94,7 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 
 .rate{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim);margin-left:auto;}
 .rate input{accent-color:var(--accent);}
-.rate .val{font-family:"IBM Plex Mono",monospace;color:var(--text);width:38px;text-align:right;}
+.rate .val{font-family:var(--font-mono);color:var(--text);width:38px;text-align:right;}
 
 .phrases{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .phrases button{padding:6px 12px;font-size:12px;}
@@ -134,12 +108,12 @@ button:disabled{opacity:.5;cursor:not-allowed;}
   border-top:1px dashed var(--border);
 }
 .now .label{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;}
-.now .note{font-family:"IBM Plex Mono",monospace;font-size:34px;font-weight:600;min-width:70px;}
-.now .idx{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text-dim);}
+.now .note{font-family:var(--font-mono);font-size:34px;font-weight:600;min-width:70px;}
+.now .idx{font-family:var(--font-mono);font-size:13px;color:var(--text-dim);}
 
 .sing-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
 .score{
-  font-family:"IBM Plex Mono",monospace;
+  font-family:var(--font-mono);
   font-size:13px;
   color:var(--text-dim);
   display:flex;
@@ -155,7 +129,7 @@ button:disabled{opacity:.5;cursor:not-allowed;}
   flex-wrap:wrap;
 }
 .target-note{
-  font-family:"IBM Plex Mono",monospace;
+  font-family:var(--font-mono);
   font-size:46px;
   font-weight:600;
   background:var(--surface-2);
@@ -198,9 +172,9 @@ button:disabled{opacity:.5;cursor:not-allowed;}
 .meter .needle.show{opacity:1;}
 .meter .needle.good{background:var(--good);}
 .meter .needle.bad{background:var(--bad);}
-.meter-scale{display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--text-dim);margin-top:4px;}
+.meter-scale{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-top:4px;}
 
-.detected{margin-top:10px;font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--text-dim);}
+.detected{margin-top:10px;font-family:var(--font-mono);font-size:13px;color:var(--text-dim);}
 .detected b{color:var(--text);}
 
 .sing-controls{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
@@ -214,6 +188,16 @@ footer{color:var(--text-dim);font-size:12px;text-align:center;line-height:1.6;}
 </style>
 
 <div class="wrap">
+  <nav class="site-nav" aria-label="Тренажёры">
+    <a href="index.html">Все</a>
+    <a href="cadence.html">Каданс</a>
+    <a href="solfege.html">Пение с листа</a>
+    <a href="caged.html">CAGED</a>
+    <a href="modes.html">Лады</a>
+    <a href="improv.html">Импровизация</a>
+    <a href="progress.html">Прогресс</a>
+  </nav>
+
   <header>
     <h1>Соло Let Down</h1>
     <div class="meta">
