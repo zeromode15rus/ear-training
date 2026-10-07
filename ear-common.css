@@ -22,7 +22,7 @@
     --font-mono:'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
   }
   @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]):not([data-theme="kid"]){
+    :root:not([data-theme="light"]):not([data-theme="kid"]):not([data-theme="panel"]){
       --ink:#fbf3e2;
       --paper:#16120c;
       --paper-raised:#231b10;

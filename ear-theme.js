@@ -1,23 +1,32 @@
-// Переключатель темы: «как в системе» → светлая → тёмная → детская. Подключается в начале страницы, чтобы не мигало.
+// Переключатель темы: «как в системе» → светлая → тёмная → панель → детская.
+// Подключается в начале страницы, чтобы не мигало.
 (function(){
   var KEY = 'ear-theme';
-  var ORDER = [null, 'light', 'dark', 'kid'];
+  var ORDER = [null, 'light', 'dark', 'panel', 'kid'];
   var root = document.documentElement;
 
-  var fontsAdded = false;
-  function kidFonts(){
-    if(fontsAdded) return;
-    fontsAdded = true;
+  // Шрифты тем тянем только когда тема включена — остальным они ни к чему.
+  var loaded = {};
+  function font(key, href){
+    if(loaded[key]) return;
+    loaded[key] = true;
     var l = document.createElement('link');
     l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap';
+    l.href = href;
     document.head.appendChild(l);
+  }
+  function kidFonts(){
+    font('kid', 'https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap');
+  }
+  function panelFonts(){
+    font('panel', 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap');
   }
 
   function apply(t){
-    if(t === 'light' || t === 'dark' || t === 'kid') root.setAttribute('data-theme', t);
+    if(t === 'light' || t === 'dark' || t === 'kid' || t === 'panel') root.setAttribute('data-theme', t);
     else root.removeAttribute('data-theme');
     if(t === 'kid') kidFonts();
+    if(t === 'panel') panelFonts();
   }
 
   var saved = null;
@@ -122,6 +131,7 @@
       btn.innerHTML = t === 'dark' ? '☾ Тёмная'
         : t === 'light' ? '☀ Светлая'
         : t === 'kid' ? PAW + 'Детская'
+        : t === 'panel' ? '▣ Панель'
         : '◐ Как в системе';
       btn.title = 'Тема оформления — нажмите, чтобы переключить';
     }

@@ -1,0 +1,477 @@
+/* Тема «Приборная панель»: data-theme="panel".
+   Подключается после ear-common.css и ear-kid.css.
+
+   Логика: это не «тёмная тема», а корпус студийного прибора. Отсюда три решения.
+   1. Прямые углы. Таблеток (999px) нет вовсе — скругление 0, 2 и 4 пикселя.
+      Именно круглые пилюли везде сильнее всего и выдают «сверстано на глаз».
+   2. Шкалы вместо подбора по месту: семь кеглей, отступы кратны четырём,
+      рамка всегда 1 пиксель. Полуторапиксельных рамок нет — они мылят край.
+   3. Подписи — шелкография: моноширинный, капсом, с разрядкой. Значения —
+      светодиодные табло: тоже моноширинный, табличные цифры, акцентный цвет. */
+
+:root[data-theme="panel"]{
+  color-scheme:dark;
+
+  /* корпус */
+  --ink:#e6e9ed;
+  --paper:#121417;            /* панель */
+  --paper-raised:#1a1d22;     /* модуль на панели */
+  --line:#2b3037;             /* фрезеровка, волосяная линия */
+  --muted:#858e9a;            /* шелкография */
+
+  /* индикация — янтарный светодиод */
+  --brass:#e9a23b;
+  --brass-deep:#ffc46b;
+  --brass-tint:#2a2114;
+  --on-brass:#15171a;
+
+  --good:#45c69b;
+  --good-bg:#15271f;
+  --bad:#ff5f5f;
+  --bad-bg:#2a1718;
+
+  /* корпус не отбрасывает теней: он плоский и матовый */
+  --shadow:none;
+
+  --tone-r:#e9a23b; --tone-3:#45c69b; --tone-5:#5aa0f0; --tone-7:#b98cf5;
+  --tone-char:#ff5f8f; --tone-x:#6b7682;
+
+  --wood:#1f232a; --fret:#434a53; --string:#8c959f; --inlay:#2b3037; --dot-text:#15171a;
+
+  --font-display:'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-body:'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-mono:'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+
+  /* шкала кеглей — семь ступеней вместо семнадцати значений вразнобой */
+  --t-legend:0.6875rem;   /* 11px — подписи капсом */
+  --t-xs:0.75rem;         /* 12px */
+  --t-sm:0.8125rem;       /* 13px */
+  --t-md:0.875rem;        /* 14px — основной текст */
+  --t-lg:1rem;            /* 16px — акцентный */
+  --t-xl:1.25rem;         /* 20px — заголовок раздела */
+  --t-2xl:1.75rem;        /* 28px — заголовок страницы */
+
+  /* отступы кратны четырём */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-6:24px; --s-8:32px; --s-12:48px;
+
+  /* прямые углы: фаска, а не пилюля */
+  --r-0:0; --r-1:2px; --r-2:4px;
+}
+
+/* ---------- корпус ---------- */
+
+:root[data-theme="panel"] body{
+  background:var(--paper);
+  font-feature-settings:"tnum" 1, "cv05" 1;
+  letter-spacing:0;
+}
+:root[data-theme="panel"] .page{ padding-block:var(--s-8) var(--s-12); }
+
+:root[data-theme="panel"] .hero{ margin-bottom:var(--s-8); }
+:root[data-theme="panel"] .hero h1{
+  font-family:var(--font-display);
+  font-size:var(--t-2xl);
+  font-weight:600;
+  letter-spacing:-0.015em;
+}
+:root[data-theme="panel"] .tagline{
+  font-size:var(--t-sm);
+  color:var(--muted);
+  margin-top:var(--s-2);
+}
+:root[data-theme="panel"] .staff line{ stroke:var(--line); }
+:root[data-theme="panel"] .staff circle{ fill:var(--brass); }
+
+/* ---------- шелкография: все служебные подписи одинаковы ---------- */
+
+:root[data-theme="panel"] .stat-label,
+:root[data-theme="panel"] .context-bar,
+:root[data-theme="panel"] .theory-table th,
+:root[data-theme="panel"] .settings label,
+:root[data-theme="panel"] .level-caption{
+  font-family:var(--font-mono);
+  font-size:var(--t-legend);
+  text-transform:uppercase;
+  letter-spacing:.085em;
+  color:var(--muted);
+  font-weight:400;
+}
+:root[data-theme="panel"] .settings label{ text-transform:none; letter-spacing:.02em; font-size:var(--t-xs); }
+
+/* ---------- модули ---------- */
+
+:root[data-theme="panel"] .trainer,
+:root[data-theme="panel"] .settings,
+:root[data-theme="panel"] .theory{
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  border-radius:var(--r-2);
+  box-shadow:none;
+  padding:var(--s-6);
+}
+:root[data-theme="panel"] .settings{ gap:var(--s-4); }
+:root[data-theme="panel"] .settings h2,
+:root[data-theme="panel"] .theory-head h2{
+  font-family:var(--font-mono);
+  font-size:var(--t-legend);
+  font-weight:500;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--muted);
+  padding-bottom:var(--s-3);
+  border-bottom:1px solid var(--line);
+  margin-bottom:var(--s-2);
+}
+:root[data-theme="panel"] .theory-head h2 span{ color:var(--brass); }
+
+/* ---------- навигация: язычки на корпусе, не пилюли ---------- */
+
+:root[data-theme="panel"] .site-nav{
+  gap:0;
+  border-bottom:1px solid var(--line);
+  padding-bottom:0;
+  margin-bottom:var(--s-8);
+  justify-content:flex-start;
+  flex-wrap:wrap;
+}
+:root[data-theme="panel"] .site-nav a{
+  font-family:var(--font-mono);
+  font-size:var(--t-xs);
+  letter-spacing:.04em;
+  color:var(--muted);
+  border:none;
+  border-bottom:2px solid transparent;
+  border-radius:0;
+  padding:var(--s-2) var(--s-3);
+  margin-bottom:-1px;
+}
+:root[data-theme="panel"] .site-nav a:hover{ color:var(--ink); border-bottom-color:var(--line); }
+:root[data-theme="panel"] .site-nav a[aria-current="page"]{
+  background:none;
+  color:var(--brass);
+  border-bottom-color:var(--brass);
+}
+:root[data-theme="panel"] .theme-btn{
+  font-family:var(--font-mono);
+  font-size:var(--t-xs);
+  letter-spacing:.04em;
+  color:var(--muted);
+  border:1px solid var(--line);
+  border-radius:var(--r-1);
+  padding:var(--s-1) var(--s-3);
+  margin-left:auto;
+  align-self:center;
+}
+:root[data-theme="panel"] .theme-btn:hover{ color:var(--brass-deep); border-color:var(--brass); }
+
+/* ---------- переключатели: сегментный тумблер ---------- */
+
+:root[data-theme="panel"] .tabs,
+:root[data-theme="panel"] .mode-toggle{
+  border:1px solid var(--line);
+  border-radius:var(--r-1);
+  overflow:hidden;
+  margin-bottom:var(--s-6);
+}
+:root[data-theme="panel"] .mode-toggle{ margin-bottom:0; }
+:root[data-theme="panel"] .tabs button,
+:root[data-theme="panel"] .mode-toggle button{
+  background:var(--paper);
+  color:var(--muted);
+  font-family:var(--font-mono);
+  font-size:var(--t-xs);
+  font-weight:400;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:var(--s-3) var(--s-2);
+  border-right:1px solid var(--line);
+}
+:root[data-theme="panel"] .tabs button:last-child,
+:root[data-theme="panel"] .mode-toggle button:last-child{ border-right:none; }
+:root[data-theme="panel"] .tabs button.active,
+:root[data-theme="panel"] .mode-toggle button.active{
+  background:var(--brass);
+  color:var(--on-brass);
+  font-weight:600;
+}
+
+/* ---------- кнопки: фрезерованные клавиши ---------- */
+
+:root[data-theme="panel"] .play-btn{
+  background:var(--brass);
+  color:var(--on-brass);
+  border:1px solid var(--brass-deep);
+  border-radius:var(--r-1);
+  box-shadow:none;
+  font-family:var(--font-mono);
+  font-size:var(--t-md);
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:var(--s-3) var(--s-8);
+}
+:root[data-theme="panel"] .play-btn:hover{ background:var(--brass-deep); transform:none; }
+:root[data-theme="panel"] .play-btn:active{ transform:translateY(1px); }
+
+:root[data-theme="panel"] .ghost-btn,
+:root[data-theme="panel"] .next-btn{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--r-1);
+  color:var(--muted);
+  font-family:var(--font-mono);
+  font-size:var(--t-xs);
+  font-weight:400;
+  letter-spacing:.04em;
+  padding:var(--s-2) var(--s-4);
+}
+:root[data-theme="panel"] .ghost-btn:hover,
+:root[data-theme="panel"] .next-btn:hover{
+  border-color:var(--brass);
+  color:var(--brass-deep);
+  background:var(--paper);
+}
+:root[data-theme="panel"] .ghost-btn.active{ background:var(--brass); border-color:var(--brass); color:var(--on-brass); }
+
+/* ---------- клавиши ответов ---------- */
+
+:root[data-theme="panel"] .degree-tile,
+:root[data-theme="panel"] .slot{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--r-1);
+  padding:var(--s-3) var(--s-2);
+  gap:var(--s-1);
+}
+:root[data-theme="panel"] .degree-tile:hover:not(:disabled){
+  border-color:var(--brass);
+  transform:none;
+  background:var(--brass-tint);
+}
+:root[data-theme="panel"] .degree-tile .roman{
+  font-family:var(--font-display);
+  font-size:var(--t-xl);
+  font-weight:500;
+  letter-spacing:.02em;
+}
+:root[data-theme="panel"] .degree-tile .chordname,
+:root[data-theme="panel"] .slot-mark,
+:root[data-theme="panel"] .slot-name{
+  font-family:var(--font-mono);
+  font-size:var(--t-legend);
+  letter-spacing:.04em;
+  color:var(--muted);
+}
+:root[data-theme="panel"] .degree-tile.is-correct{ background:var(--good-bg); border-color:var(--good); }
+:root[data-theme="panel"] .degree-tile.is-wrong{ background:var(--bad-bg); border-color:var(--bad); }
+:root[data-theme="panel"] .slot{ border-style:dashed; }
+:root[data-theme="panel"] .slot.is-current{ border-style:solid; border-color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass); }
+
+/* ---------- табло ---------- */
+
+:root[data-theme="panel"] .stats{ gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--r-1); }
+:root[data-theme="panel"] .stat{
+  background:var(--paper);
+  border:none;
+  border-radius:0;
+  padding:var(--s-3) var(--s-2);
+}
+:root[data-theme="panel"] .stat-value{
+  font-family:var(--font-mono);
+  font-size:var(--t-xl);
+  font-weight:500;
+  color:var(--brass);
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-0.01em;
+}
+:root[data-theme="panel"] #keyReadout{ color:var(--brass); }
+
+:root[data-theme="panel"] .feedback{
+  border-radius:var(--r-1);
+  font-family:var(--font-mono);
+  font-size:var(--t-sm);
+  font-weight:400;
+  letter-spacing:.02em;
+  margin-bottom:var(--s-4);
+}
+
+/* ---------- поля ---------- */
+
+:root[data-theme="panel"] select{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--r-1);
+  color:var(--ink);
+  font-family:var(--font-mono);
+  font-size:var(--t-xs);
+  padding:var(--s-2) var(--s-2);
+}
+:root[data-theme="panel"] select:hover{ border-color:var(--brass); }
+:root[data-theme="panel"] input[type="range"]{ accent-color:var(--brass); }
+:root[data-theme="panel"] .checkbox{ font-size:var(--t-xs); color:var(--ink); letter-spacing:.01em; }
+:root[data-theme="panel"] .checkbox input{ accent-color:var(--brass); }
+:root[data-theme="panel"] .kbd{
+  border:1px solid var(--line);
+  border-radius:var(--r-1);
+  font-size:var(--t-legend);
+  color:var(--muted);
+}
+:root[data-theme="panel"] .hint,
+:root[data-theme="panel"] .notes{ font-size:var(--t-xs); color:var(--muted); line-height:1.6; }
+:root[data-theme="panel"] .status,
+:root[data-theme="panel"] .prog-name{ font-family:var(--font-mono); font-size:var(--t-xs); color:var(--brass); font-style:normal; }
+:root[data-theme="panel"] .reset-btn{ font-family:var(--font-mono); font-size:var(--t-legend); letter-spacing:.04em; }
+:root[data-theme="panel"] .weak-hint{ font-family:var(--font-mono); font-size:var(--t-legend); letter-spacing:.03em; }
+
+/* ---------- таблица справки ---------- */
+
+:root[data-theme="panel"] .theory-table{ font-size:var(--t-xs); }
+:root[data-theme="panel"] .theory-table th,
+:root[data-theme="panel"] .theory-table td{ border-bottom:1px solid var(--line); padding:var(--s-2) var(--s-3); }
+:root[data-theme="panel"] .theory-table td:first-child{ font-family:var(--font-mono); font-weight:500; color:var(--brass); }
+
+/* ---------- гриф ---------- */
+
+:root[data-theme="panel"] .board .nut{ stroke:var(--string); }
+:root[data-theme="panel"] .board .dot circle{ stroke:var(--paper); }
+:root[data-theme="panel"] .board .fretnum{ letter-spacing:.06em; }
+
+/* ---------- карточки прогресса ---------- */
+
+:root[data-theme="panel"] .card{
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  border-radius:var(--r-2);
+  box-shadow:none;
+  padding:var(--s-6);
+}
+:root[data-theme="panel"] .card h2{ font-size:var(--t-lg); font-weight:600; }
+:root[data-theme="panel"] .card h2 small{ font-family:var(--font-mono); font-size:var(--t-legend); letter-spacing:.06em; }
+:root[data-theme="panel"] .bar-track{ background:var(--paper); border:1px solid var(--line); border-radius:0; height:6px; }
+:root[data-theme="panel"] .bar-fill{ border-radius:0; }
+:root[data-theme="panel"] .bar-row .num,
+:root[data-theme="panel"] .conf .cnt{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+:root[data-theme="panel"] .two h3{ font-family:var(--font-mono); font-size:var(--t-legend); letter-spacing:.09em; }
+:root[data-theme="panel"] .heat rect{ rx:0; }
+
+/* ---------- две ранние страницы ----------
+   Они размечены своими именами (--surface, --radius…). Цвета к ним приходят
+   псевдонимами из их же :root, а вот скругление там зашито 10px — переопределяем,
+   иначе на панели останутся круглые углы от прежнего оформления. */
+
+:root[data-theme="panel"]{
+  --radius:var(--r-1);
+}
+
+/* ---------- собственные виджеты страниц ----------
+   У каждого тренажёра есть свои блоки помимо общих, и они остались бы круглыми
+   посреди прямоугольной панели. Круглыми намеренно оставлены только индикаторы
+   (.legend i, .beats i) — это светодиоды, им форма положена. */
+
+/* пение с листа */
+:root[data-theme="panel"] .score{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--r-1);
+  padding:var(--s-3) var(--s-2) var(--s-1);
+}
+:root[data-theme="panel"] .chord-strip span{
+  border:1px solid var(--line);
+  border-radius:0;
+  font-family:var(--font-mono);
+  font-size:var(--t-legend);
+  letter-spacing:.06em;
+  padding:var(--s-1) var(--s-2);
+}
+:root[data-theme="panel"] .chord-strip span.is-now{
+  border-color:var(--brass);
+  background:var(--brass-tint);
+  color:var(--brass-deep);
+}
+:root[data-theme="panel"] .my-form input[type="text"],
+:root[data-theme="panel"] .my-form input[type="number"],
+:root[data-theme="panel"] .my-form textarea,
+:root[data-theme="panel"] .settings textarea{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--r-1);
+  color:var(--ink);
+  font-family:var(--font-mono);
+  font-size:var(--t-xs);
+}
+
+/* CAGED */
+:root[data-theme="panel"] .shape-steps button,
+:root[data-theme="panel"] .prog-card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--r-1);
+  color:var(--ink);
+}
+:root[data-theme="panel"] .shape-steps button{ font-family:var(--font-mono); font-weight:500; }
+:root[data-theme="panel"] .shape-steps button small{ font-family:var(--font-mono); font-size:var(--t-legend); letter-spacing:.04em; }
+:root[data-theme="panel"] .shape-steps button.active,
+:root[data-theme="panel"] .prog-card.active{ border-color:var(--brass); background:var(--brass-tint); }
+
+/* лады */
+:root[data-theme="panel"] .bright-scale button,
+:root[data-theme="panel"] .degree-strip div,
+:root[data-theme="panel"] .vamp-cards div,
+:root[data-theme="panel"] .chips label{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--r-1);
+  color:var(--ink);
+}
+:root[data-theme="panel"] .bright-scale button{ font-family:var(--font-body); font-size:var(--t-xs); font-weight:500; }
+:root[data-theme="panel"] .bright-scale button small{ font-family:var(--font-mono); font-size:var(--t-legend); }
+:root[data-theme="panel"] .bright-scale button.active{ border-color:var(--brass); background:var(--brass-tint); }
+:root[data-theme="panel"] .bright-axis{ font-family:var(--font-mono); font-size:var(--t-legend); letter-spacing:.09em; }
+:root[data-theme="panel"] .degree-strip b{ font-family:var(--font-display); font-weight:500; }
+:root[data-theme="panel"] .degree-strip span{ font-family:var(--font-mono); font-size:var(--t-legend); }
+:root[data-theme="panel"] .degree-strip .changed{ box-shadow:inset 0 0 0 1px var(--brass); }
+
+/* импровизация */
+:root[data-theme="panel"] .chord-row div{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--r-1);
+  font-family:var(--font-display);
+  font-weight:500;
+}
+:root[data-theme="panel"] .chord-row div small{ font-family:var(--font-mono); font-size:var(--t-legend); }
+:root[data-theme="panel"] .chord-row div.active{ border-color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass); }
+:root[data-theme="panel"] .coach{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--r-1);
+}
+:root[data-theme="panel"] .coach .big{ font-family:var(--font-display); font-weight:500; }
+:root[data-theme="panel"] .coach .small{ font-family:var(--font-mono); font-size:var(--t-legend); letter-spacing:.04em; }
+
+/* прогресс и титульная */
+:root[data-theme="panel"] .heat-legend{ font-family:var(--font-mono); font-size:var(--t-legend); letter-spacing:.06em; }
+:root[data-theme="panel"] .heat-legend i{ border-radius:0; }
+:root[data-theme="panel"] .top-stats .stat-value{ font-size:var(--t-2xl); }
+:root[data-theme="panel"] .group h3{ font-family:var(--font-mono); font-size:var(--t-legend); letter-spacing:.09em; }
+:root[data-theme="panel"] .card p{ font-size:var(--t-xs); color:var(--muted); }
+
+/* Собственные элементы двух ранних страниц: они обёрнуты в .wrap, которого
+   больше нигде нет, поэтому правим точечно и не задеваем остальные тренажёры. */
+
+:root[data-theme="panel"] .wrap button,
+:root[data-theme="panel"] .wrap .opt,
+:root[data-theme="panel"] .wrap .target-note,
+:root[data-theme="panel"] .wrap .meter,
+:root[data-theme="panel"] .wrap .mode-switch,
+:root[data-theme="panel"] .wrap .mode-switch button,
+:root[data-theme="panel"] .wrap #rollCanvas{
+  border-radius:var(--r-1);
+}
+:root[data-theme="panel"] .wrap button{
+  font-family:var(--font-mono);
+  font-size:var(--t-xs);
+  letter-spacing:.04em;
+}
+:root[data-theme="panel"] .wrap .target-note{ font-family:var(--font-mono); }
+:root[data-theme="panel"] .wrap .meter .needle{ border-radius:0; }
